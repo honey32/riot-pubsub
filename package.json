@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Reactive property library compatible with riot tags, implemented with riot-observable.",
   "main": "dist/index.js",
-  "jsnext:main": "dist/es6.observable.js",
+  "jsnext:main": "dist/es6.index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
