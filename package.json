@@ -6,8 +6,8 @@
   "jsnext:main": "dist/es6.index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c",
-    "watch": "rollup -c -w"
+    "rollup": "rollup -c",
+    "rollup:w": "rollup -c -w"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,8 @@
   "homepage": "https://github.com/honey32/riot-pubsub#readme",
   "devDependencies": {
     "rollup": "^0.49.2",
-    "rollup-plugin-node-resolve": "^3.0.0"
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-typescript2": "^0.5.2"
   },
   "dependencies": {
     "riot-observable": "^3.0.0"

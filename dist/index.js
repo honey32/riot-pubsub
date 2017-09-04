@@ -128,37 +128,30 @@ var observable = function(el) {
 
 };
 
-const _value = Symbol();
-
-class Observable {
-
-    /**
-     * 
-     * @param {*} value 
-     */
+class Pub {
     constructor(value) {
-        this[_value] = value;
-
+        this._value = value;
         observable(this);
+        this._delegate = this;
+    }
+    get value() {
+        return this._value;
+    }
+    set value(newValue) {
+        const oldValue = this._value;
+        this._value = newValue;
+        this._delegate.trigger('update', newValue, true, oldValue);
     }
 }
-
-Observable.symbols._value = _value;
-
 var pub = {
-    Observable
+    Pub
 };
 
 const mixin = {
-    /**
-     * 
-     * @param { Observable } prop 
-     */
     subscribe(prop) {
-        console.log(prop[pub.Observable.symbols._value]);
+        console.log(prop.value);
     }
 };
-
 var sub = {
     mixin
 };
@@ -170,3 +163,4 @@ var index = {
 return index;
 
 })));
+//# sourceMappingURL=index.js.map
