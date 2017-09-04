@@ -128,11 +128,60 @@ var observable = function(el) {
 
 };
 
-class Pub {
-    constructor(value) {
+class ObservableDispatcher {
+    constructor() {
+        this.observable = observable();
+    }
+    trigger(object, event, newValue, isReassign, oldValue) {
+        this.observable.trigger(event, object, newValue, isReassign, oldValue);
+    }
+    on(object, event, fn) {
+        this.observable.on(event, (anotherObj, ...args) => {
+            if (anotherObj === object) {
+                fn(...args);
+            }
+        });
+    }
+    onAnyUpdate(objects, fn) {
+        this.observable.on(event, (anotherObj, newValue, ...rest) => {
+            const found = objects.find((_, e) => anotherObj === e);
+            if (found) {
+                fn(found.name, found.value, ...rest);
+            }
+        });
+    }
+}
+var dispatcher = Object.freeze(new ObservableDispatcher());
+
+class Observable {
+    trigger(event, newValue, isReassigned, oldValue) {
+        dispatcher.trigger(this, event, newValue, isReassigned, oldValue);
+    }
+    on(event, fn) {
+        dispatcher.on(this, event, fn);
+    }
+    bind(fn) {
+        return new MappedObs(fn, this);
+    }
+}
+class MappedObs extends Observable {
+    constructor(fn, base) {
+        super();
+        base.on('update', (n, ...args) => {
+            this._value = fn(n);
+            this.trigger('update', this._value, ...args);
+        });
+    }
+    get value() {
+        return this._value;
+    }
+}
+class Pub extends Observable {
+    constructor(value, name, isMutable = false) {
+        super();
+        this.name = name;
+        this.isMutable = isMutable;
         this._value = value;
-        observable(this);
-        this._delegate = this;
     }
     get value() {
         return this._value;
@@ -140,16 +189,35 @@ class Pub {
     set value(newValue) {
         const oldValue = this._value;
         this._value = newValue;
-        this._delegate.trigger('update', newValue, true, oldValue);
+        this.trigger('update', newValue, true, oldValue);
     }
 }
 var pub = {
     Pub
 };
 
+function updateTag(tag, propName, value) {
+    tag.update({ [propName]: value });
+}
 const mixin = {
-    subscribe(prop) {
-        console.log(prop.value);
+    sub(prop, name = '') {
+        updateTag(this, name || prop.name, prop.value);
+        prop.on('update', (newValue) => {
+            updateTag(this, name || prop.name, prop.value);
+        });
+    },
+    subAll(...props) {
+        props.forEach(prop => {
+            this.sub(prop);
+        });
+    },
+    imitate(model) {
+        for (const key in model) {
+            const prop = model[key];
+            if (prop && (typeof prop.on === 'function')) {
+                this.sub(prop, prop.name || key);
+            }
+        }
     }
 };
 var sub = {
