@@ -1,0 +1,24 @@
+{
+  "name": "riot-pubsub",
+  "version": "1.0.0",
+  "description": "Reactive property library compatible with riot tags, implemented with riot-observable.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/honey32/riot-pubsub.git"
+  },
+  "keywords": [
+    "riot",
+    "observable",
+    "reactive"
+  ],
+  "author": "Honey32",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/honey32/riot-pubsub/issues"
+  },
+  "homepage": "https://github.com/honey32/riot-pubsub#readme"
+}
