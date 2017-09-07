@@ -145,14 +145,14 @@ class ObservableDispatcher {
         });
     }
 }
-var dispatcher = Object.freeze(new ObservableDispatcher());
+const instance = Object.freeze(new ObservableDispatcher());
 
 class Observable {
     trigger(event, newValue, isReassigned, oldValue) {
-        dispatcher.trigger(this, event, newValue, isReassigned, oldValue);
+        instance.trigger(this, event, newValue, isReassigned, oldValue);
     }
     on(event, fn) {
-        dispatcher.on(this, event, fn);
+        instance.on(this, event, fn);
     }
     bind(fn) {
         return new MappedObs(fn, this);
@@ -190,6 +190,14 @@ var pub = {
     Pub
 };
 
+
+var pub$1 = Object.freeze({
+	Observable: Observable,
+	MappedObs: MappedObs,
+	Pub: Pub,
+	default: pub
+});
+
 function updateTag(tag, propName, value) {
     tag.update({ [propName]: value });
 }
@@ -218,9 +226,11 @@ var sub = {
     mixin
 };
 
-var index = {
-    pub, sub
-};
 
-export default index;
+var sub$1 = Object.freeze({
+	mixin: mixin,
+	default: sub
+});
+
+export { pub$1 as pub, sub$1 as sub };
 //# sourceMappingURL=es6.index.js.map

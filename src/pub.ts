@@ -1,4 +1,4 @@
-import dispatcher from './dispatcher'
+import { instance as dispatcher } from './dispatcher'
 
 
 export abstract class Observable<V> {

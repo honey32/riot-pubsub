@@ -1,7 +1,7 @@
 import observable from 'riot-observable'
 import { Pub } from './pub'
 
-class ObservableDispatcher {
+export class ObservableDispatcher {
     observable: any
     
     constructor() {
@@ -52,4 +52,9 @@ class ObservableDispatcher {
     }
 }
 
-export default Object.freeze(new ObservableDispatcher())
+export const instance = Object.freeze(new ObservableDispatcher())
+
+export default {
+    instance,
+    ObservableDispatcher
+}

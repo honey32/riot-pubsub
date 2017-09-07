@@ -1,6 +1,6 @@
-import pub from './pub'
-import sub from './sub'
+import * as pub from './pub'
+import * as sub from './sub'
 
-export default {
+export {
     pub, sub
 }

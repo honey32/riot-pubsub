@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global['riot-pubsub'] = factory());
-}(this, (function () { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global['riot-pubsub'] = {})));
+}(this, (function (exports) { 'use strict';
 
 var observable = function(el) {
 
@@ -151,14 +151,14 @@ class ObservableDispatcher {
         });
     }
 }
-var dispatcher = Object.freeze(new ObservableDispatcher());
+const instance = Object.freeze(new ObservableDispatcher());
 
 class Observable {
     trigger(event, newValue, isReassigned, oldValue) {
-        dispatcher.trigger(this, event, newValue, isReassigned, oldValue);
+        instance.trigger(this, event, newValue, isReassigned, oldValue);
     }
     on(event, fn) {
-        dispatcher.on(this, event, fn);
+        instance.on(this, event, fn);
     }
     bind(fn) {
         return new MappedObs(fn, this);
@@ -196,6 +196,14 @@ var pub = {
     Pub
 };
 
+
+var pub$1 = Object.freeze({
+	Observable: Observable,
+	MappedObs: MappedObs,
+	Pub: Pub,
+	default: pub
+});
+
 function updateTag(tag, propName, value) {
     tag.update({ [propName]: value });
 }
@@ -224,11 +232,16 @@ var sub = {
     mixin
 };
 
-var index = {
-    pub, sub
-};
 
-return index;
+var sub$1 = Object.freeze({
+	mixin: mixin,
+	default: sub
+});
+
+exports.pub = pub$1;
+exports.sub = sub$1;
+
+Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=index.js.map

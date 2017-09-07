@@ -4,7 +4,7 @@ function updateTag(tag: any, propName: string, value: any) {
     tag.update({[propName]: value})
 }
 
-const mixin = {
+export const mixin = {
     sub<T>(prop: Pub<T>, name: string | null = '') {
         updateTag(this, name || prop.name, prop.value)
         prop.on('update', (newValue) => {
