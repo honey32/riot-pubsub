@@ -22,6 +22,7 @@ export class ObservableMapped<V, B> extends Observable<V> {
 
     constructor(fn: (B) => V, base: Observable<B>) {
         super()
+        this._value = fn(base.value)
         base.on('update', (n, ...args) => {
             this._value = fn(n);
             (<(e: 'update', v: V, ...rest: any[]) => any>this.trigger)('update', this._value, ...args)

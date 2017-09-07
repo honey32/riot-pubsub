@@ -167,6 +167,7 @@ class Observable$1 {
 class ObservableMapped$1 extends Observable$1 {
     constructor(fn, base) {
         super();
+        this._value = fn(base.value);
         base.on('update', (n, ...args) => {
             this._value = fn(n);
             this.trigger('update', this._value, ...args);
