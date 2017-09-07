@@ -13,11 +13,11 @@ export abstract class Observable<V> {
     }
 
     bind<B>(fn: (V) => B) {
-        return new MappedObs<B, V>(fn, this)
+        return new ObservableMapped<B, V>(fn, this)
     }
 }
 
-export class MappedObs<V, B> extends Observable<V> {
+export class ObservableMapped<V, B> extends Observable<V> {
     private _value: V
 
     constructor(fn: (B) => V, base: Observable<B>) {
@@ -52,6 +52,19 @@ export class Pub<V> extends Observable<V> {
     }
 }
 
-export default {
-    Pub
+export function create<V>(value: V, name: string): Pub<V>
+export function create<V>(value: V, name: string, flag1: 'mutable'): Observable<V>
+export function create<V>(value: V, name: string, ...flags: ('mutable' | 'contributable')[]): Observable<V> {
+    const mutable = flags.indexOf('mutable') >= 0
+    const contributable = flags.indexOf('contributable') >= 0
+    
+    if (mutable) { 
+        return null
+    } else {
+        if (contributable) {
+            return null
+        } else {
+            return new Pub<V>(value, name)
+        }
+    }
 }

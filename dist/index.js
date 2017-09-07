@@ -153,7 +153,7 @@ class ObservableDispatcher {
 }
 const instance = Object.freeze(new ObservableDispatcher());
 
-class Observable {
+class Observable$1 {
     trigger(event, newValue, isReassigned, oldValue) {
         instance.trigger(this, event, newValue, isReassigned, oldValue);
     }
@@ -161,10 +161,10 @@ class Observable {
         instance.on(this, event, fn);
     }
     bind(fn) {
-        return new MappedObs(fn, this);
+        return new ObservableMapped$1(fn, this);
     }
 }
-class MappedObs extends Observable {
+class ObservableMapped$1 extends Observable$1 {
     constructor(fn, base) {
         super();
         base.on('update', (n, ...args) => {
@@ -176,7 +176,7 @@ class MappedObs extends Observable {
         return this._value;
     }
 }
-class Pub extends Observable {
+class Pub$1 extends Observable$1 {
     constructor(value, name, isMutable = false) {
         super();
         this.name = name;
@@ -192,16 +192,28 @@ class Pub extends Observable {
         this.trigger('update', newValue, true, oldValue);
     }
 }
-var pub = {
-    Pub
-};
+function create$1(value, name, ...flags) {
+    const mutable = flags.indexOf('mutable') >= 0;
+    const contributable = flags.indexOf('contributable') >= 0;
+    if (mutable) {
+        return null;
+    }
+    else {
+        if (contributable) {
+            return null;
+        }
+        else {
+            return new Pub$1(value, name);
+        }
+    }
+}
 
 
-var pub$1 = Object.freeze({
-	Observable: Observable,
-	MappedObs: MappedObs,
-	Pub: Pub,
-	default: pub
+var pub = Object.freeze({
+	Observable: Observable$1,
+	ObservableMapped: ObservableMapped$1,
+	Pub: Pub$1,
+	create: create$1
 });
 
 function updateTag(tag, propName, value) {
@@ -228,18 +240,23 @@ const mixin = {
         }
     }
 };
-var sub = {
-    mixin
-};
 
 
-var sub$1 = Object.freeze({
-	mixin: mixin,
-	default: sub
+var sub = Object.freeze({
+	mixin: mixin
 });
 
-exports.pub = pub$1;
-exports.sub = sub$1;
+const Observable = Pub$1;
+const Pub = Pub$1;
+const ObservableMapped = ObservableMapped$1;
+const create = create$1;
+
+exports.Observable = Observable;
+exports.Pub = Pub;
+exports.ObservableMapped = ObservableMapped;
+exports.create = create;
+exports.pub = pub;
+exports.sub = sub;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

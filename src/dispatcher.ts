@@ -53,8 +53,3 @@ export class ObservableDispatcher {
 }
 
 export const instance = Object.freeze(new ObservableDispatcher())
-
-export default {
-    instance,
-    ObservableDispatcher
-}

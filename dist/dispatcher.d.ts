@@ -7,8 +7,3 @@ export declare class ObservableDispatcher {
     onAnyUpdate(objects: Pub<any>[], fn: (propName: string, newValue: any, isReassign: boolean, oldValue?: any) => any): void;
 }
 export declare const instance: Readonly<ObservableDispatcher>;
-declare const _default: {
-    instance: Readonly<ObservableDispatcher>;
-    ObservableDispatcher: typeof ObservableDispatcher;
-};
-export default _default;
