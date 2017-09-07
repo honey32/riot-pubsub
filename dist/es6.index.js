@@ -154,7 +154,7 @@ class Observable$1 {
     on(event, fn) {
         instance.on(this, event, fn);
     }
-    bind(fn) {
+    map(fn) {
         return new ObservableMapped$1(fn, this);
     }
 }

@@ -2,7 +2,7 @@ export declare abstract class Observable<V> {
     readonly value: V;
     trigger(event: 'update' | 'contribute', newValue: V, isReassigned: boolean, oldValue?: V): void;
     on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
-    bind<B>(fn: (V) => B): ObservableMapped<B, V>;
+    map<B>(fn: (V) => B): ObservableMapped<B, V>;
 }
 export declare class ObservableMapped<V, B> extends Observable<V> {
     private _value;

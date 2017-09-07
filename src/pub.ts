@@ -12,7 +12,7 @@ export abstract class Observable<V> {
         dispatcher.on(this, event, fn)
     }
 
-    bind<B>(fn: (V) => B) {
+    map<B>(fn: (V) => B) {
         return new ObservableMapped<B, V>(fn, this)
     }
 }

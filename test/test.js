@@ -15,10 +15,10 @@ testAll(
             pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
-    test('Observable#bind')
+    test('Observable#map')
         .expectsSuccess(() => {
             const pub = Pub.create('a', '')
-            const mapped = pub.bind(s => s + 'b')
+            const mapped = pub.map(s => s + 'b')
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
