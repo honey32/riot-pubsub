@@ -19,9 +19,9 @@ testAll(
         .expectsSuccess(() => {
             const pub = new lib.pub.Pub('a', 'publisherA')
             const mapped = pub.bind(s => s + 'b')
-            console.assert(mapped.value === 'ab')
+            console.assert(mapped.value === 'ab', `mismatch before change ${mapped.value} === ${'ab'}`)
             pub.value = 'b'
-            console.assert(mapped.value === 'bb')
+            console.assert(mapped.value === 'bb', 'mismatch after change')
         }),
     test('unimplemented feature')
         .expectsSuccess(() => {

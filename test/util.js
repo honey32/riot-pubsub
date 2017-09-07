@@ -80,9 +80,10 @@ function waitForEnd(tests) {
 function print(test) {
     test.promise.then(() =>
         console.log(test.description + ' : SUCCESS')
-    ).catch(() => 
+    ).catch(err => {
         console.log(test.description + ' : FAILED')    
-    )
+        console.error(err)
+    })
 }
 
 /**
