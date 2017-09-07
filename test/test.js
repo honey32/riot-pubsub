@@ -15,6 +15,14 @@ testAll(
             pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
+    test('Observable#bind')
+        .expectsSuccess(() => {
+            const pub = new lib.pub.Pub('a', 'publisherA')
+            const mapped = pub.bind(s => s + 'b')
+            console.assert(mapped.value === 'ab')
+            pub.value = 'b'
+            console.assert(mapped.value === 'bb')
+        }),
     test('unimplemented feature')
         .expectsSuccess(() => {
             const pub = new lib.pub.Pub([], 'publisherA')
