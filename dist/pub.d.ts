@@ -15,6 +15,6 @@ export declare class Pub<V> extends Observable<V> {
     private _value;
     constructor(value: V, name: string, isMutable?: boolean);
     value: V;
+    static create<V>(value: V, name: string): Pub<V>;
+    static create<V>(value: V, name: string, flag1: 'mutable'): Observable<V>;
 }
-export declare function create<V>(value: V, name: string): Pub<V>;
-export declare function create<V>(value: V, name: string, flag1: 'mutable'): Observable<V>;

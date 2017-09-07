@@ -192,19 +192,19 @@ class Pub$1 extends Observable$1 {
         this._value = newValue;
         this.trigger('update', newValue, true, oldValue);
     }
-}
-function create$1(value, name, ...flags) {
-    const mutable = flags.indexOf('mutable') >= 0;
-    const contributable = flags.indexOf('contributable') >= 0;
-    if (mutable) {
-        return null;
-    }
-    else {
-        if (contributable) {
+    static create(value, name, ...flags) {
+        const mutable = flags.indexOf('mutable') >= 0;
+        const contributable = flags.indexOf('contributable') >= 0;
+        if (mutable) {
             return null;
         }
         else {
-            return new Pub$1(value, name);
+            if (contributable) {
+                return null;
+            }
+            else {
+                return new Pub$1(value, name);
+            }
         }
     }
 }
@@ -213,8 +213,7 @@ function create$1(value, name, ...flags) {
 var pub = Object.freeze({
 	Observable: Observable$1,
 	ObservableMapped: ObservableMapped$1,
-	Pub: Pub$1,
-	create: create$1
+	Pub: Pub$1
 });
 
 function updateTag(tag, propName, value) {
@@ -250,12 +249,10 @@ var sub = Object.freeze({
 const Observable = Pub$1;
 const Pub = Pub$1;
 const ObservableMapped = ObservableMapped$1;
-const create = create$1;
 
 exports.Observable = Observable;
 exports.Pub = Pub;
 exports.ObservableMapped = ObservableMapped;
-exports.create = create;
 exports.pub = pub;
 exports.sub = sub;
 

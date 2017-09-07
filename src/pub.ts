@@ -51,21 +51,21 @@ export class Pub<V> extends Observable<V> {
         this._value = newValue
         this.trigger('update', newValue, true, oldValue)
     }
-}
 
-export function create<V>(value: V, name: string): Pub<V>
-export function create<V>(value: V, name: string, flag1: 'mutable'): Observable<V>
-export function create<V>(value: V, name: string, ...flags: ('mutable' | 'contributable')[]): Observable<V> {
-    const mutable = flags.indexOf('mutable') >= 0
-    const contributable = flags.indexOf('contributable') >= 0
-    
-    if (mutable) { 
-        return null
-    } else {
-        if (contributable) {
+    static create<V>(value: V, name: string): Pub<V>
+    static create<V>(value: V, name: string, flag1: 'mutable'): Observable<V>
+    static create<V>(value: V, name: string, ...flags: ('mutable' | 'contributable')[]): Observable<V> {
+        const mutable = flags.indexOf('mutable') >= 0
+        const contributable = flags.indexOf('contributable') >= 0
+        
+        if (mutable) { 
             return null
         } else {
-            return new Pub<V>(value, name)
+            if (contributable) {
+                return null
+            } else {
+                return new Pub<V>(value, name)
+            }
         }
     }
 }
