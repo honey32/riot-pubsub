@@ -106,6 +106,15 @@ function testAll(...tests) {
     })
 }
 
+const assert = {
+    truth(bool) {
+        console.assert(bool, `expected to be true, but actually ${bool} `)
+    },
+    eq(left, right) {
+        console.assert(left === right, `expected equality, but ${left} !== ${right}`)
+    }
+}
+
 module.exports = {
-    test, testAll
+    test, testAll, assert
 }

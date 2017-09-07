@@ -1,13 +1,13 @@
 const {Pub} = require('../dist/index.js')
 
-const {testAll, test} = require('./util')
+const {testAll, test, assert} = require('./util')
 
 testAll(
     test('Pub#value property works')
         .expectsSuccess(() => {
             const pub = Pub.create('a', '')
             pub.value = 'b'
-            console.assert(pub.value === 'b')
+            assert.eq(pub.value, 'b')
         }),
     test('event fired correctly')
         .promisesTruth(() => new Promise((resolve, reject) => {
@@ -19,9 +19,9 @@ testAll(
         .expectsSuccess(() => {
             const pub = Pub.create('a', '')
             const mapped = pub.bind(s => s + 'b')
-            console.assert(mapped.value === 'ab', `mismatch before change ${mapped.value} === ${'ab'}`)
+            assert.eq(mapped.value, 'ab')
             pub.value = 'b'
-            console.assert(mapped.value === 'bb', 'mismatch after change')
+            assert.eq(mapped.value, 'bb')
         }),
     test('unimplemented feature')
         .expectsSuccess(() => {
@@ -29,7 +29,7 @@ testAll(
             pub.mutate(value => {
                 value.push('a')
             })
-            console.assert(pub.value[0] === 'a')
+            assert.eq(pub.value[0], 'a')
         })
 )
 
