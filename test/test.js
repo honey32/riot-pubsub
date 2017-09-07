@@ -5,19 +5,19 @@ const {testAll, test} = require('./util')
 testAll(
     test('Pub#value property works')
         .expectsSuccess(() => {
-            const pub = Pub.create('a', 'publisherA')
+            const pub = Pub.create('a', '')
             pub.value = 'b'
             console.assert(pub.value === 'b')
         }),
     test('event fired correctly')
         .promisesTruth(() => new Promise((resolve, reject) => {
-            const pub = Pub.create('a', 'publisherA')
+            const pub = Pub.create('a', '')
             pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
     test('Observable#bind')
         .expectsSuccess(() => {
-            const pub = Pub.create('a', 'publisherA')
+            const pub = Pub.create('a', '')
             const mapped = pub.bind(s => s + 'b')
             console.assert(mapped.value === 'ab', `mismatch before change ${mapped.value} === ${'ab'}`)
             pub.value = 'b'
@@ -25,7 +25,7 @@ testAll(
         }),
     test('unimplemented feature')
         .expectsSuccess(() => {
-            const pub = Pub.create([], 'publisherA')
+            const pub = Pub.create([], '')
             pub.mutate(value => {
                 value.push('a')
             })
