@@ -12,7 +12,7 @@ testAll(
     test('event fired correctly')
         .promisesTruth(() => new Promise((resolve, reject) => {
             const pub = new lib.pub.Pub('a', 'publisherA')
-            pub.on('update', (newValue) => resolve(newValue))
+            pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
     test('unimplemented feature')
