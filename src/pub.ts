@@ -71,7 +71,7 @@ export abstract class Pub<V> extends Observable<V> {
 }
 
 export interface Mutable<V> extends Pub<V> {
-    mutate(fn: (V) => any): void
+    mutate(fn: (value: V) => any): void
     readonly isMutable: true
 }
 
@@ -88,7 +88,7 @@ export class PubMutable<V> extends Pub<V> implements Mutable<V> {
     readonly isMutable: true = true
     readonly isContributable: false = false
 
-    mutate(fn: (V) => any): void {
+    mutate(fn: (value: V) => any): void {
         fn(this.value)
         this.trigger('update', this.value, false)
     }
@@ -120,12 +120,12 @@ export class PubMutableContributable<V> extends Pub<V> implements Mutable<V>, Co
         this.trigger('contribute', newValue, true, oldValue)
     }
 
-    mutate(fn: (V) => any): void {
+    mutate(fn: (value: V) => any): void {
         fn(this.value)
         this.trigger('update', this.value, false)
     }
 
-    contributeMutation(fn: (V) => any): void {
+    contributeMutation(fn: (value: V) => any): void {
         fn(this.value)
         this.trigger('contribute', this.value, false)
     }

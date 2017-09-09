@@ -22,7 +22,7 @@ export declare abstract class Pub<V> extends Observable<V> {
     static create<V>(value: V, name: string, flag1: 'mutable', flag2: 'contributable'): PubMutableContributable<V>;
 }
 export interface Mutable<V> extends Pub<V> {
-    mutate(fn: (V) => any): void;
+    mutate(fn: (value: V) => any): void;
     readonly isMutable: true;
 }
 export interface Contributable<V> extends Pub<V> {
@@ -35,7 +35,7 @@ export declare class PubImmutable<V> extends Pub<V> {
 export declare class PubMutable<V> extends Pub<V> implements Mutable<V> {
     readonly isMutable: true;
     readonly isContributable: false;
-    mutate(fn: (V) => any): void;
+    mutate(fn: (value: V) => any): void;
 }
 export declare class PubImmutableContributable<V> extends Pub<V> implements Contributable<V> {
     readonly isMutable: false;
@@ -46,6 +46,6 @@ export declare class PubMutableContributable<V> extends Pub<V> implements Mutabl
     readonly isMutable: true;
     readonly isContributable: true;
     contribute(newValue: V): void;
-    mutate(fn: (V) => any): void;
-    contributeMutation(fn: (V) => any): void;
+    mutate(fn: (value: V) => any): void;
+    contributeMutation(fn: (value: V) => any): void;
 }
