@@ -9,6 +9,18 @@ export declare class ObservableMapped<V, B> extends Observable<V> {
     constructor(fn: (B) => V, base: Observable<B>);
     readonly value: V;
 }
+export interface Flag {
+    muatable?: boolean;
+    contributable?: boolean;
+}
+export interface FlagMutable {
+    mutable: true;
+    contributable?: boolean;
+}
+export interface FlagContributable {
+    mutable?: boolean;
+    contributable: true;
+}
 export declare abstract class Pub<V> extends Observable<V> {
     name: string;
     protected _value: V;
@@ -16,10 +28,10 @@ export declare abstract class Pub<V> extends Observable<V> {
     readonly isContributable: boolean;
     constructor(value: V, name: string);
     value: V;
-    static create<V>(value: V, name: string): PubImmutable<V>;
-    static create<V>(value: V, name: string, flag1: 'mutable'): PubMutable<V>;
-    static create<V>(value: V, name: string, flag1: 'contributable'): PubImmutableContributable<V>;
-    static create<V>(value: V, name: string, flag1: 'mutable', flag2: 'contributable'): PubMutableContributable<V>;
+    static create<V>(value: V, name: string, flag: FlagMutable & FlagContributable): PubMutableContributable<V>;
+    static create<V>(value: V, name: string, flag: FlagMutable): PubMutable<V>;
+    static create<V>(value: V, name: string, flag: FlagContributable): PubImmutableContributable<V>;
+    static create<V>(value: V, name: string, flag?: Flag): PubImmutable<V>;
 }
 export interface Mutable<V> extends Pub<V> {
     mutate(fn: (value: V) => any): void;

@@ -34,6 +34,21 @@ export class ObservableMapped<V, B> extends Observable<V> {
     }
 }
 
+export interface Flag {
+    muatable?: boolean
+    contributable?: boolean
+}
+
+export interface FlagMutable {
+    mutable: true
+    contributable?: boolean
+}
+
+export interface FlagContributable {
+    mutable?: boolean
+    contributable: true
+}
+
 export abstract class Pub<V> extends Observable<V> {
     protected _value: V
     readonly isMutable: boolean
@@ -54,13 +69,13 @@ export abstract class Pub<V> extends Observable<V> {
         this.trigger('update', newValue, true, oldValue)
     }
 
-    static create<V>(value: V, name: string): PubImmutable<V>
-    static create<V>(value: V, name: string, flag1: 'mutable'): PubMutable<V>
-    static create<V>(value: V, name: string, flag1: 'contributable'): PubImmutableContributable<V>
-    static create<V>(value: V, name: string, flag1: 'mutable', flag2: 'contributable'): PubMutableContributable<V>
-    static create<V>(value: V, name: string, ...flags: ('mutable' | 'contributable')[]): Pub<V> {
-        const mutable = flags.indexOf('mutable') >= 0
-        const contributable = flags.indexOf('contributable') >= 0
+    static create<V>(value: V, name: string, flag: FlagMutable & FlagContributable): PubMutableContributable<V>
+    static create<V>(value: V, name: string, flag: FlagMutable): PubMutable<V>
+    static create<V>(value: V, name: string, flag: FlagContributable): PubImmutableContributable<V>
+    static create<V>(value: V, name: string, flag?: Flag): PubImmutable<V>
+    static create<V>(value: V, name: string, flag?: Flag): Pub<V> {
+        const mutable = flag['mutable']
+        const contributable = flag['contributable']
         
         if (mutable) { 
             return contributable ? new PubMutableContributable(value, name) : new PubMutable(value, name)

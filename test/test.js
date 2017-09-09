@@ -25,7 +25,7 @@ testAll(
         }),
     test('mutable pub')
         .expectsSuccess(() => {
-            const pub = Pub.create([], '', 'mutable')
+            const pub = Pub.create([], '', {mutable: true, contributable: false})            
             pub.mutate(value => {
                 value.push('a')
             })

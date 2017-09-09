@@ -191,9 +191,9 @@ class Pub$1 extends Observable {
         this._value = newValue;
         this.trigger('update', newValue, true, oldValue);
     }
-    static create(value, name, ...flags) {
-        const mutable = flags.indexOf('mutable') >= 0;
-        const contributable = flags.indexOf('contributable') >= 0;
+    static create(value, name, flag) {
+        const mutable = flag['mutable'];
+        const contributable = flag['contributable'];
         if (mutable) {
             return contributable ? new PubMutableContributable(value, name) : new PubMutable(value, name);
         }
