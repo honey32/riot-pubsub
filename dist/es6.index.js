@@ -189,15 +189,10 @@ class Pub$1 extends Observable {
         const mutable = flags.indexOf('mutable') >= 0;
         const contributable = flags.indexOf('contributable') >= 0;
         if (mutable) {
-            return null;
+            return contributable ? new PubMutableContributable(value, name) : new PubMutable(value, name);
         }
         else {
-            if (contributable) {
-                return null;
-            }
-            else {
-                return new PubImmutable(value, name);
-            }
+            return contributable ? new PubImmutableContributable(value, name) : new PubImmutable(value, name);
         }
     }
 }

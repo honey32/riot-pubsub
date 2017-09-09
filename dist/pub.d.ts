@@ -16,8 +16,10 @@ export declare abstract class Pub<V> extends Observable<V> {
     readonly isContributable: boolean;
     constructor(value: V, name: string);
     value: V;
-    static create<V>(value: V, name: string): Pub<V>;
-    static create<V>(value: V, name: string, flag1: 'mutable'): Observable<V>;
+    static create<V>(value: V, name: string): PubImmutable<V>;
+    static create<V>(value: V, name: string, flag1: 'mutable'): PubMutable<V>;
+    static create<V>(value: V, name: string, flag1: 'contributable'): PubImmutableContributable<V>;
+    static create<V>(value: V, name: string, flag1: 'mutable', flag2: 'contributable'): PubMutableContributable<V>;
 }
 export interface Mutable<V> extends Pub<V> {
     mutate(fn: (V) => any): void;
