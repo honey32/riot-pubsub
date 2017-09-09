@@ -34,10 +34,12 @@ export class ObservableMapped<V, B> extends Observable<V> {
     }
 }
 
-export class Pub<V> extends Observable<V> {
-    private _value: V
+export abstract class Pub<V> extends Observable<V> {
+    protected _value: V
+    readonly isMutable: boolean
+    readonly isContributable: boolean
 
-    constructor(value: V, public name: string, public isMutable: boolean = false) {
+    constructor(value: V, public name: string) {
         super()
         this._value = value
     }
@@ -64,8 +66,69 @@ export class Pub<V> extends Observable<V> {
             if (contributable) {
                 return null
             } else {
-                return new Pub<V>(value, name)
+                return new PubImmutable<V>(value, name)
             }
         }
+    }
+}
+
+export interface Mutable<V> extends Pub<V> {
+    mutate(fn: (V) => any): void
+    readonly isMutable: true
+}
+
+export interface Contributable<V> extends Pub<V> {
+    contribute(newValue: V): void
+    readonly isContributable: true
+}
+
+export class PubImmutable<V> extends Pub<V> {
+    readonly isMutable: false = false
+}
+
+export class PubMutable<V> extends Pub<V> implements Mutable<V> {
+    readonly isMutable: true = true
+    readonly isContributable: false = false
+
+    mutate(fn: (V) => any): void {
+        fn(this.value)
+        this.trigger('update', this.value, false)
+    }
+}
+
+export class PubImmutableContributable<V> extends Pub<V> implements Contributable<V> {
+    readonly isMutable: false = false
+    readonly isContributable: true = true
+
+    contribute(newValue: V): void {
+        const oldValue = this._value
+
+        if (newValue === oldValue) {
+            return
+        }
+        
+        this._value = newValue
+        this.trigger('contribute', newValue, true, oldValue)
+    }
+}
+
+export class PubMutableContributable<V> extends Pub<V> implements Mutable<V>, Contributable<V> {
+    readonly isMutable: true = true
+    readonly isContributable: true = true
+
+    contribute(newValue: V): void {
+        const oldValue = this._value
+        this._value = newValue
+        this.trigger('contribute', newValue, true, oldValue)
+    }
+
+    mutate(fn: (V) => any): void {
+        fn(this.value)
+        this.trigger('update', this.value, false)
+    }
+
+    contributeMutation(fn: (V) => any): void {
+        fn(this.value)
+        this.trigger('contribute', this.value, false)
     }
 }

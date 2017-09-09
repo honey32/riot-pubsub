@@ -153,7 +153,7 @@ class ObservableDispatcher {
 }
 const instance = Object.freeze(new ObservableDispatcher());
 
-class Observable$1 {
+class Observable {
     trigger(event, newValue, isReassigned, oldValue) {
         instance.trigger(this, event, newValue, isReassigned, oldValue);
     }
@@ -161,10 +161,10 @@ class Observable$1 {
         instance.on(this, event, fn);
     }
     map(fn) {
-        return new ObservableMapped$1(fn, this);
+        return new ObservableMapped(fn, this);
     }
 }
-class ObservableMapped$1 extends Observable$1 {
+class ObservableMapped extends Observable {
     constructor(fn, base) {
         super();
         this._value = fn(base.value);
@@ -177,11 +177,10 @@ class ObservableMapped$1 extends Observable$1 {
         return this._value;
     }
 }
-class Pub$1 extends Observable$1 {
-    constructor(value, name, isMutable = false) {
+class Pub$1 extends Observable {
+    constructor(value, name) {
         super();
         this.name = name;
-        this.isMutable = isMutable;
         this._value = value;
     }
     get value() {
@@ -203,18 +202,63 @@ class Pub$1 extends Observable$1 {
                 return null;
             }
             else {
-                return new Pub$1(value, name);
+                return new PubImmutable(value, name);
             }
         }
     }
 }
-
-
-var pub = Object.freeze({
-	Observable: Observable$1,
-	ObservableMapped: ObservableMapped$1,
-	Pub: Pub$1
-});
+class PubImmutable extends Pub$1 {
+    constructor() {
+        super(...arguments);
+        this.isMutable = false;
+    }
+}
+class PubMutable extends Pub$1 {
+    constructor() {
+        super(...arguments);
+        this.isMutable = true;
+        this.isContributable = false;
+    }
+    mutate(fn) {
+        fn(this.value);
+        this.trigger('update', this.value, false);
+    }
+}
+class PubImmutableContributable extends Pub$1 {
+    constructor() {
+        super(...arguments);
+        this.isMutable = false;
+        this.isContributable = true;
+    }
+    contribute(newValue) {
+        const oldValue = this._value;
+        if (newValue === oldValue) {
+            return;
+        }
+        this._value = newValue;
+        this.trigger('contribute', newValue, true, oldValue);
+    }
+}
+class PubMutableContributable extends Pub$1 {
+    constructor() {
+        super(...arguments);
+        this.isMutable = true;
+        this.isContributable = true;
+    }
+    contribute(newValue) {
+        const oldValue = this._value;
+        this._value = newValue;
+        this.trigger('contribute', newValue, true, oldValue);
+    }
+    mutate(fn) {
+        fn(this.value);
+        this.trigger('update', this.value, false);
+    }
+    contributeMutation(fn) {
+        fn(this.value);
+        this.trigger('contribute', this.value, false);
+    }
+}
 
 function updateTag(tag, propName, value) {
     tag.update({ [propName]: value });
@@ -241,20 +285,22 @@ const mixin = {
     }
 };
 
-
-var sub = Object.freeze({
-	mixin: mixin
-});
-
-const Observable = Pub$1;
 const Pub = Pub$1;
-const ObservableMapped = ObservableMapped$1;
+const internals = Object.freeze({
+    Observable: Observable,
+    ObservableMapped: ObservableMapped,
+    PubImmutable: PubImmutable,
+    PubMutable: PubMutable,
+    PubImmutableContributable: PubImmutableContributable,
+    PubMutableContributable: PubMutableContributable,
+    ObservableDispatcher: ObservableDispatcher,
+    instanceObservableDispatcher: instance
+});
+const subMixin = mixin;
 
-exports.Observable = Observable;
 exports.Pub = Pub;
-exports.ObservableMapped = ObservableMapped;
-exports.pub = pub;
-exports.sub = sub;
+exports.internals = internals;
+exports.subMixin = subMixin;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
