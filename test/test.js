@@ -23,9 +23,9 @@ testAll(
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
         }),
-    test('unimplemented feature')
+    test('mutable pub')
         .expectsSuccess(() => {
-            const pub = Pub.create([], '')
+            const pub = Pub.create([], '', 'mutable')
             pub.mutate(value => {
                 value.push('a')
             })
