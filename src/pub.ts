@@ -65,6 +65,11 @@ export abstract class Pub<V> extends Observable<V> {
 
     set value(newValue: V) {
         const oldValue = this._value
+
+        if (!this.isMutable && newValue === oldValue) {
+            return
+        }
+
         this._value = newValue
         this.trigger('update', newValue, true, oldValue)
     }

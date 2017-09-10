@@ -188,6 +188,9 @@ class Pub$1 extends Observable {
     }
     set value(newValue) {
         const oldValue = this._value;
+        if (!this.isMutable && newValue === oldValue) {
+            return;
+        }
         this._value = newValue;
         this.trigger('update', newValue, true, oldValue);
     }
