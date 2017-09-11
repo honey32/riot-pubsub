@@ -6,6 +6,16 @@ class TestUnit {
     constructor(description) {
         this.description = description
         this.promise = Promise.resolve()
+        this.sets = [null]
+    }
+
+    /**
+     * 
+     * @param {any[]} sets 
+     */
+    for(...sets) {
+        this.sets = sets
+        return this
     }
 
     /**
@@ -13,14 +23,15 @@ class TestUnit {
      * @param {function} fn 
      */
     expectsSuccess(fn) {
-        this.promise = new Promise((resolve, reject) => {
+        const cases = this.sets.map(set => new Promise((resolve, reject) => {
             try {
-                fn()
+                fn(set)
                 resolve()
             } catch(e) {
                 reject(e)
             }
-        })
+        }))
+        this.promise = Promise.all(cases)
         return this
     }
 
@@ -29,13 +40,15 @@ class TestUnit {
      * @param {function} fn 
      */
     promisesTruth(fn) {
-        this.promise = fn().then(bool => new Promise((resolve, reject) => {
-            if (bool) {
-                resolve()
-            } else {
-                reject()
-            }
-        }))
+        const cases = this.sets.map(set => 
+            fn(set).then(bool => new Promise((resolve, reject) => {
+                if (bool) {
+                    resolve()
+                } else {
+                    reject()
+                }
+            })))
+        this.promise = Promise.all(cases)
         return this
     }
 }
@@ -109,6 +122,9 @@ function testAll(...tests) {
 const assert = {
     truth(bool) {
         console.assert(bool, `expected to be true, but actually ${bool} `)
+    },
+    false(bool) {
+        console.assert(!bool, `expected to br false, but actually ${bool}`)
     },
     eq(left, right) {
         console.assert(left === right, `expected equality, but ${left} !== ${right}`)
