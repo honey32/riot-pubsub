@@ -15,6 +15,23 @@ testAll(
             pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
+    test('Immutable Pub prevents update correctly')
+        .promisesTruth(() => {
+            const cases = [Pub.create('a', ''), Pub.create('a', '', {contributable: true})]
+                .map(pub => 
+                    new Promise((resolve, reject) => {
+                        pub.on('update', () => reject('update'))
+                        pub.value = 'a'
+                        setTimeout(() => resolve(), 1000)
+                    })
+                )
+            cases.push(new Promise((resolve, reject) => {
+                const pub = [Pub.create('a', '', {contributable: true})]
+                pub.on('contribute', () => reject('contribute'))
+                setTimeout(() => resolve(), 1000)
+            }))
+            return Promise.all(cases).then(() => true)
+        }),
     test('Observable#map')
         .expectsSuccess(() => {
             const pub = Pub.create('a', '')

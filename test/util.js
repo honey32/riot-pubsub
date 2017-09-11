@@ -29,7 +29,7 @@ class TestUnit {
      * @param {function} fn 
      */
     promisesTruth(fn) {
-        this.promises = fn().then(bool => new Promise((resolve, reject) => {
+        this.promise = fn().then(bool => new Promise((resolve, reject) => {
             if (bool) {
                 resolve()
             } else {
