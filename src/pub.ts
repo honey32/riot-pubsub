@@ -102,6 +102,7 @@ export interface Contributable<V> extends Pub<V> {
 
 export class PubImmutable<V> extends Pub<V> {
     readonly isMutable: false = false
+    readonly isContributable: false = false
 }
 
 export class PubMutable<V> extends Pub<V> implements Mutable<V> {

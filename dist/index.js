@@ -209,6 +209,7 @@ class PubImmutable extends Pub$1 {
     constructor() {
         super(...arguments);
         this.isMutable = false;
+        this.isContributable = false;
     }
 }
 class PubMutable extends Pub$1 {
