@@ -79,8 +79,8 @@ export abstract class Pub<V> extends Observable<V> {
     static create<V>(value: V, name: string, flag: FlagContributable): PubImmutableContributable<V>
     static create<V>(value: V, name: string, flag?: Flag): PubImmutable<V>
     static create<V>(value: V, name: string, flag?: Flag): Pub<V> {
-        const mutable = flag['mutable']
-        const contributable = flag['contributable']
+        const mutable = flag && flag['mutable']
+        const contributable = flag && flag['contributable']
         
         if (mutable) { 
             return contributable ? new PubMutableContributable(value, name) : new PubMutable(value, name)
