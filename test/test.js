@@ -1,4 +1,4 @@
-const {Pub} = require('../dist/index.js')
+const {Pub, subMixin} = require('../dist/index.js')
 
 const {testAll, test, assert} = require('./util')
 
@@ -6,10 +6,11 @@ testAll(
     test('factory method works')
         .for([true, true], [true, false], [false, true], [false, false])
         .expectsSuccess(pair => {
-            const pub = Pub.create(0, '', {mutable: pair[0], contributable: pair[1]})
-            const {isMutable, isContributable} = pub
-            assert.eq(pair[0], isMutable)
-            assert.eq(pair[1], isContributable)
+            const [mutable, contributable] = pair
+            const pub = Pub.create(0, '', { mutable, contributable })
+
+            assert.eq(pub.isMutable, mutable)
+            assert.eq(pub.isContributable, contributable)
         }),
     test('Pub#value property works')
         .for(Pub.create('a', ''), Pub.create('b', ''))
@@ -47,12 +48,24 @@ testAll(
             assert.eq(mapped.value, 'bb')
         }),
     test('mutable pub')
-        .expectsSuccess(() => {
-            const pub = Pub.create([], '', {mutable: true, contributable: false})            
+        .for(true, false)
+        .expectsSuccess(contributable => {
+            const pub = Pub.create([], '', {mutable: true, contributable})            
             pub.mutate(value => {
                 value.push('a')
             })
             assert.eq(pub.value[0], 'a')
+        }),
+    test('mixin')
+        .for(['a', 'b', 'prop'])
+        .expectsSuccess(set => {
+            const [prev, newValue, propName] = set
+            const pub = Pub.create(prev, propName)
+            const mixin = {...subMixin, update(obj){ Object.assign(this, obj) }}
+            mixin.sub(pub)
+            assert.eq(prev, mixin[propName])
+            pub.value = newValue
+            assert.eq(newValue, mixin[propName])
         })
 )
 
