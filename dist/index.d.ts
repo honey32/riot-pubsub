@@ -12,6 +12,7 @@ declare const _default: {
         ObservableDispatcher: typeof dispatcher.ObservableDispatcher;
         instanceObservableDispatcher: Readonly<dispatcher.ObservableDispatcher>;
     }>;
+    onAnyUpdate: (objects: pub.Pub<any>[], fn: (propName: string, newValue: any, isReassign: boolean, oldValue?: any) => any) => void;
     subMixin: {
         sub<T>(prop: pub.Pub<T>, name?: string): void;
         subAll(...props: pub.Pub<any>[]): void;

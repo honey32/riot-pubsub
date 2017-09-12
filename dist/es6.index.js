@@ -291,6 +291,7 @@ const internals = Object.freeze({
 var index = {
     Pub: Pub,
     internals,
+    onAnyUpdate: instance.onAnyUpdate,
     subMixin: mixin
 };
 
