@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global['riot-pubsub'] = {})));
-}(this, (function (exports) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global['riot-pubsub'] = factory());
+}(this, (function () { 'use strict';
 
 var observable = function(el) {
 
@@ -177,7 +177,7 @@ class ObservableMapped extends Observable {
         return this._value;
     }
 }
-class Pub$1 extends Observable {
+class Pub extends Observable {
     constructor(value, name) {
         super();
         this.name = name;
@@ -205,14 +205,14 @@ class Pub$1 extends Observable {
         }
     }
 }
-class PubImmutable extends Pub$1 {
+class PubImmutable extends Pub {
     constructor() {
         super(...arguments);
         this.isMutable = false;
         this.isContributable = false;
     }
 }
-class PubMutable extends Pub$1 {
+class PubMutable extends Pub {
     constructor() {
         super(...arguments);
         this.isMutable = true;
@@ -223,7 +223,7 @@ class PubMutable extends Pub$1 {
         this.trigger('update', this.value, false);
     }
 }
-class PubImmutableContributable extends Pub$1 {
+class PubImmutableContributable extends Pub {
     constructor() {
         super(...arguments);
         this.isMutable = false;
@@ -238,7 +238,7 @@ class PubImmutableContributable extends Pub$1 {
         this.trigger('contribute', newValue, true, oldValue);
     }
 }
-class PubMutableContributable extends Pub$1 {
+class PubMutableContributable extends Pub {
     constructor() {
         super(...arguments);
         this.isMutable = true;
@@ -284,7 +284,6 @@ const mixin = {
     }
 };
 
-const Pub = Pub$1;
 const internals = Object.freeze({
     Observable: Observable,
     ObservableMapped: ObservableMapped,
@@ -295,13 +294,13 @@ const internals = Object.freeze({
     ObservableDispatcher: ObservableDispatcher,
     instanceObservableDispatcher: instance
 });
-const subMixin = mixin;
+var index = {
+    Pub: Pub,
+    internals,
+    subMixin: mixin
+};
 
-exports.Pub = Pub;
-exports.internals = internals;
-exports.subMixin = subMixin;
-
-Object.defineProperty(exports, '__esModule', { value: true });
+return index;
 
 })));
 //# sourceMappingURL=index.js.map

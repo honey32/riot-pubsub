@@ -2,9 +2,7 @@ import * as pub from './pub'
 import * as sub from './sub'
 import * as dispatcher from './dispatcher'
 
-export const Pub = pub.Pub
-
-export const internals = Object.freeze({
+const internals = Object.freeze({
     Observable: pub.Observable,
     ObservableMapped: pub.ObservableMapped,
     PubImmutable: pub.PubImmutable,
@@ -15,4 +13,8 @@ export const internals = Object.freeze({
     instanceObservableDispatcher: dispatcher.instance
 })
 
-export const subMixin = sub.mixin
+export default {
+    Pub: pub.Pub,
+    internals,
+    subMixin: sub.mixin
+}
