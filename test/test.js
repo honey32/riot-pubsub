@@ -1,4 +1,4 @@
-const {Pub, subMixin} = require('../dist/index.js')
+const {Pub, subMixin, onAnyUpdate } = require('../dist/index.js')
 
 const {testAll, test, assert} = require('./util')
 
@@ -24,6 +24,16 @@ testAll(
             pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
+    test('onAnyUpdate works')
+        .for([Pub.create('a', 'pubA'), Pub.create('b', 'pubB'), 'pubA', 'A'])
+        .promisesTruth(set =>
+            new Promise((resolve, reject) => {
+                const [a, b, changeName, changeValue] = set
+                onAnyUpdate([a, b], (name, newValue) => resolve(name === changeName && newValue === changeValue))
+                a.value = changeValue
+                setTimeout(() => reject(), 1000)
+            })
+        ),
     test('Immutable Pub prevents update correctly')
         .for(Pub.create('a', ''), Pub.create('a', '', {contributable: true}))
         .promisesTruth(pub => 

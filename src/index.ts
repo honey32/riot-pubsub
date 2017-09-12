@@ -16,6 +16,6 @@ const internals = Object.freeze({
 export default {
     Pub: pub.Pub,
     internals,
-    onAnyUpdate: dispatcher.instance.onAnyUpdate,
+    onAnyUpdate: dispatcher.instance.onAnyUpdate.bind(dispatcher.instance),
     subMixin: sub.mixin
 }

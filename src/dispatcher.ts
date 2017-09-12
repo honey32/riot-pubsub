@@ -43,8 +43,8 @@ export class ObservableDispatcher {
             oldValue?: any
         ) => any
     ) {
-        this.observable.on(event, (anotherObj, newValue, ...rest) => {
-            const found = objects.find((_, e) => anotherObj === e)
+        this.observable.on('update', (anotherObj, newValue, ...rest) => {
+            const found = objects.find((e) => anotherObj === e)
             if (found) {
                 (<(...args: any[]) => any>fn)(found.name, found.value, ...rest)
             }
