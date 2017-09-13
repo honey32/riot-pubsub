@@ -171,7 +171,7 @@ class ObservableMapped extends Observable {
         return this._value;
     }
 }
-class Pub extends Observable {
+class Pub$1 extends Observable {
     constructor(value, name) {
         super();
         this.name = name;
@@ -199,14 +199,14 @@ class Pub extends Observable {
         }
     }
 }
-class PubImmutable extends Pub {
+class PubImmutable extends Pub$1 {
     constructor() {
         super(...arguments);
         this.isMutable = false;
         this.isContributable = false;
     }
 }
-class PubMutable extends Pub {
+class PubMutable extends Pub$1 {
     constructor() {
         super(...arguments);
         this.isMutable = true;
@@ -217,7 +217,7 @@ class PubMutable extends Pub {
         this.trigger('update', this.value, false);
     }
 }
-class PubImmutableContributable extends Pub {
+class PubImmutableContributable extends Pub$1 {
     constructor() {
         super(...arguments);
         this.isMutable = false;
@@ -232,7 +232,7 @@ class PubImmutableContributable extends Pub {
         this.trigger('contribute', newValue, true, oldValue);
     }
 }
-class PubMutableContributable extends Pub {
+class PubMutableContributable extends Pub$1 {
     constructor() {
         super(...arguments);
         this.isMutable = true;
@@ -278,6 +278,7 @@ const mixin = {
     }
 };
 
+const Pub = Pub$1;
 const internals = Object.freeze({
     Observable: Observable,
     ObservableMapped: ObservableMapped,
@@ -288,12 +289,8 @@ const internals = Object.freeze({
     ObservableDispatcher: ObservableDispatcher,
     instanceObservableDispatcher: instance
 });
-var index = {
-    Pub: Pub,
-    internals,
-    onAnyUpdate: instance.onAnyUpdate.bind(instance),
-    subMixin: mixin
-};
+const onAnyUpdate = instance.onAnyUpdate.bind(instance);
+const subMixin = mixin;
 
-export default index;
+export { Pub, internals, onAnyUpdate, subMixin };
 //# sourceMappingURL=es6.index.js.map
