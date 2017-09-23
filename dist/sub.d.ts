@@ -1,6 +1,8 @@
-import { Pub } from './pub';
+import { Pub, Observable } from './pub';
 export declare const mixin: {
-    sub<T>(prop: Pub<T>, name?: string): void;
     subAll(...props: Pub<any>[]): void;
+    sub(map: {
+        [name: string]: Observable<any>;
+    }): void;
     imitate(model: object): void;
 };

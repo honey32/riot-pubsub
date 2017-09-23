@@ -1,20 +1,22 @@
 import { Pub, Observable } from './pub'
 
-function updateTag(tag: any, propName: string, value: any) {
-    tag.update({[propName]: value})
+function subscribe(context: any, prop: Observable<any>, name: string) {
+    context.update({[name]: prop.value})
+    prop.on('update', (newValue) => {
+        context.update({[name]: newValue})
+    })
 }
 
 export const mixin = {
-    sub<T>(prop: Pub<T>, name: string | null = '') {
-        updateTag(this, name || prop.name, prop.value)
-        prop.on('update', (newValue) => {
-            updateTag(this, name || prop.name, prop.value)
-        })
-    },
     subAll(...props: Pub<any>[]) {
         props.forEach(prop => {
-            this.sub(prop)
+            subscribe(this, prop, prop.name)
         })
+    },
+    sub(map: {[name: string]: Observable<any>}) {
+        for (const key in map) {
+            subscribe(this, map[key], key)
+        }
     },
     imitate(model: object) {
         for (const key in model) {

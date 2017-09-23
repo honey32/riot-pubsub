@@ -72,7 +72,7 @@ testAll(
             const [prev, newValue, propName] = set
             const pub = Pub.create(prev, propName)
             const mixin = {...subMixin, update(obj){ Object.assign(this, obj) }}
-            mixin.sub(pub)
+            mixin.sub({[propName]: pub})
             assert.eq(prev, mixin[propName])
             pub.value = newValue
             assert.eq(newValue, mixin[propName])

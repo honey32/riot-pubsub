@@ -253,20 +253,22 @@ class PubMutableContributable extends Pub$1 {
     }
 }
 
-function updateTag(tag, propName, value) {
-    tag.update({ [propName]: value });
+function subscribe(context, prop, name) {
+    context.update({ [name]: prop.value });
+    prop.on('update', (newValue) => {
+        context.update({ [name]: newValue });
+    });
 }
 const mixin = {
-    sub(prop, name = '') {
-        updateTag(this, name || prop.name, prop.value);
-        prop.on('update', (newValue) => {
-            updateTag(this, name || prop.name, prop.value);
-        });
-    },
     subAll(...props) {
         props.forEach(prop => {
-            this.sub(prop);
+            subscribe(this, prop, prop.name);
         });
+    },
+    sub(map) {
+        for (const key in map) {
+            subscribe(this, map[key], key);
+        }
     },
     imitate(model) {
         for (const key in model) {

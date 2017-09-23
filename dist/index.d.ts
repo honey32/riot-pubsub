@@ -13,7 +13,9 @@ export declare const internals: Readonly<{
 }>;
 export declare const onAnyUpdate: any;
 export declare const subMixin: {
-    sub<T>(prop: pub.Pub<T>, name?: string): void;
     subAll(...props: pub.Pub<any>[]): void;
+    sub(map: {
+        [name: string]: pub.Observable<any>;
+    }): void;
     imitate(model: object): void;
 };
