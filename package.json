@@ -1,6 +1,6 @@
 {
   "name": "riot-pubsub",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Reactive property library compatible with riot tags, implemented with riot-observable.",
   "main": "dist/index.js",
   "jsnext:main": "dist/es6.index.js",
