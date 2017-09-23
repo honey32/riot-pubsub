@@ -280,7 +280,7 @@ const mixin = {
         for (const key in model) {
             const prop = model[key];
             if (prop && (typeof prop.on === 'function')) {
-                this.sub(prop, prop.name || key);
+                subscribe(this, prop, prop.name || key);
             }
         }
     }

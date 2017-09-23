@@ -22,7 +22,7 @@ export const mixin = {
         for (const key in model) {
             const prop = model[key]
             if (prop && (typeof prop.on === 'function')) {
-                this.sub(<Observable<any>>prop, prop.name || key)
+                subscribe(this, <Observable<any>>prop, prop.name || key)
             }
         }
     }
