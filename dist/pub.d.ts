@@ -1,7 +1,8 @@
 export declare abstract class Observable<V> {
     readonly value: V;
     trigger(event: 'update' | 'contribute', newValue: V, isReassigned: boolean, oldValue?: V): void;
-    on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
+    on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): ((newValue: V, isReassigned: boolean, oldValue?: V) => any);
+    off(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
 }
 export declare class ObservableMapped<V, B> extends Observable<V> {
     private _value;
@@ -26,16 +27,15 @@ export interface FlagContributable {
     contributable: true;
 }
 export declare abstract class Pub<V> extends Observable<V> {
-    name: string;
     protected _value: V;
     readonly isMutable: boolean;
     readonly isContributable: boolean;
-    constructor(value: V, name: string);
+    constructor(value: V);
     value: V;
-    static create<V>(value: V, name: string, flag: FlagMutable & FlagContributable): PubMutableContributable<V>;
-    static create<V>(value: V, name: string, flag: FlagMutable): PubMutable<V>;
-    static create<V>(value: V, name: string, flag: FlagContributable): PubImmutableContributable<V>;
-    static create<V>(value: V, name: string, flag?: Flag): PubImmutable<V>;
+    static create<V>(value: V, flag: FlagMutable & FlagContributable): PubMutableContributable<V>;
+    static create<V>(value: V, flag: FlagMutable): PubMutable<V>;
+    static create<V>(value: V, flag: FlagContributable): PubImmutableContributable<V>;
+    static create<V>(value: V, flag?: Flag): PubImmutable<V>;
 }
 export interface Mutable<V> extends Pub<V> {
     mutate(fn: (value: V) => any): void;

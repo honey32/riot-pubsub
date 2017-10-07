@@ -142,6 +142,9 @@ class ObservableDispatcher {
             }
         });
     }
+    off(event, fn) {
+        this.observable.off(event, fn);
+    }
     onAnyUpdate(objects, fn) {
         this.observable.on('update', (anotherObj, newValue, ...rest) => {
             const found = objects.find((e) => anotherObj === e);
@@ -159,6 +162,10 @@ class Observable {
     }
     on(event, fn) {
         instance.on(this, event, fn);
+        return fn;
+    }
+    off(event, fn) {
+        instance.off(event, fn);
     }
 }
 class ObservableMapped extends Observable {
@@ -194,9 +201,8 @@ class ObservableMappedPromise extends Observable {
     }
 }
 class Pub$1 extends Observable {
-    constructor(value, name) {
+    constructor(value) {
         super();
-        this.name = name;
         this._value = value;
     }
     get value() {
@@ -210,14 +216,14 @@ class Pub$1 extends Observable {
         this._value = newValue;
         this.trigger('update', newValue, true, oldValue);
     }
-    static create(value, name, flag) {
+    static create(value, flag) {
         const mutable = flag && flag['mutable'];
         const contributable = flag && flag['contributable'];
         if (mutable) {
-            return contributable ? new PubMutableContributable(value, name) : new PubMutable(value, name);
+            return contributable ? new PubMutableContributable(value) : new PubMutable(value);
         }
         else {
-            return contributable ? new PubImmutableContributable(value, name) : new PubImmutable(value, name);
+            return contributable ? new PubImmutableContributable(value) : new PubImmutable(value);
         }
     }
 }
@@ -282,11 +288,6 @@ function subscribe(context, prop, name) {
     });
 }
 const mixin = {
-    subAll(...props) {
-        props.forEach(prop => {
-            subscribe(this, prop, prop.name);
-        });
-    },
     sub(map) {
         for (const key in map) {
             subscribe(this, map[key], key);
@@ -296,7 +297,7 @@ const mixin = {
         for (const key in model) {
             const prop = model[key];
             if (prop && (typeof prop.on === 'function')) {
-                subscribe(this, prop, prop.name || key);
+                subscribe(this, prop, key);
             }
         }
     }

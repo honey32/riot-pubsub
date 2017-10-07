@@ -99,18 +99,18 @@ export abstract class Pub<V> extends Observable<V> {
         this.trigger('update', newValue, true, oldValue)
     }
 
-    static create<V>(value: V, name: string, flag: FlagMutable & FlagContributable): PubMutableContributable<V>
-    static create<V>(value: V, name: string, flag: FlagMutable): PubMutable<V>
-    static create<V>(value: V, name: string, flag: FlagContributable): PubImmutableContributable<V>
-    static create<V>(value: V, name: string, flag?: Flag): PubImmutable<V>
-    static create<V>(value: V, name: string, flag?: Flag): Pub<V> {
+    static create<V>(value: V, flag: FlagMutable & FlagContributable): PubMutableContributable<V>
+    static create<V>(value: V, flag: FlagMutable): PubMutable<V>
+    static create<V>(value: V, flag: FlagContributable): PubImmutableContributable<V>
+    static create<V>(value: V, flag?: Flag): PubImmutable<V>
+    static create<V>(value: V, flag?: Flag): Pub<V> {
         const mutable = flag && flag['mutable']
         const contributable = flag && flag['contributable']
         
         if (mutable) { 
-            return contributable ? new PubMutableContributable(value, name) : new PubMutable(value, name)
+            return contributable ? new PubMutableContributable(value) : new PubMutable(value)
         } else {
-            return contributable ? new PubImmutableContributable(value, name) : new PubImmutable(value, name)
+            return contributable ? new PubImmutableContributable(value) : new PubImmutable(value)
         }
     }
 }

@@ -1,6 +1,5 @@
-import { Pub, Observable } from './pub';
+import { Observable } from './pub';
 export declare const mixin: {
-    subAll(...props: Pub<any>[]): void;
     sub(map: {
         [name: string]: Observable<any>;
     }): void;
