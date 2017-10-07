@@ -34,6 +34,17 @@ export class ObservableDispatcher {
         })
     }
 
+    off(
+        event: 'update' | 'contribute',
+        fn:  (
+            newValue: any,
+            isReassign: boolean,
+            oldValue?: any
+        ) => any
+    ) {
+        this.observable.off(event, fn)
+    }
+
     onAnyUpdate(
         objects: Observable<any>[],
         fn: (...args: any[]) => any

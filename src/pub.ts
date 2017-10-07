@@ -8,8 +8,13 @@ export abstract class Observable<V> {
         dispatcher.trigger(this, event, newValue, isReassigned, oldValue)
     }
 
-    on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any) {
+    on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): ((newValue: V, isReassigned: boolean, oldValue?: V) => any) {
         dispatcher.on(this, event, fn)
+        return fn
+    }
+
+    off(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any) {
+        dispatcher.off(event, fn)
     }
 }
 
