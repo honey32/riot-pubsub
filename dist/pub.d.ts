@@ -11,7 +11,7 @@ export declare class ObservableMapped<V, B> extends Observable<V> {
 }
 export declare class ObservableMappedPromise<V, B> extends Observable<V> {
     private _value;
-    constructor(dependencies: Observable<B>[], fn: () => Promise<V>);
+    constructor(dependencies: Observable<B>[], initial: V, fn: () => Promise<V>);
     readonly value: V;
 }
 export interface Flag {

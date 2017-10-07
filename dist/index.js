@@ -183,8 +183,9 @@ class ObservableMapped extends Observable {
     }
 }
 class ObservableMappedPromise extends Observable {
-    constructor(dependencies, fn) {
+    constructor(dependencies, initial, fn) {
         super();
+        this._value = initial;
         fn().then(value => {
             this._value = value;
         });
@@ -318,8 +319,8 @@ const subMixin = mixin;
 function reactive(dependencies, fn) {
     return new ObservableMapped(dependencies, fn);
 }
-function reactivePromise(dependencies, fn) {
-    return new ObservableMappedPromise(dependencies, fn);
+function reactivePromise(dependencies, initial, fn) {
+    return new ObservableMappedPromise(dependencies, initial, fn);
 }
 
 exports.Pub = Pub;

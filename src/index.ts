@@ -21,6 +21,6 @@ export function reactive<V>(dependencies: pub.Observable<any>[], fn: () => V) {
     return new pub.ObservableMapped(dependencies, fn)
 }
 
-export function reactivePromise<V>(dependencies: pub.Observable<any>[], fn: () => Promise<V>) {
-    return new pub.ObservableMappedPromise(dependencies, fn)
+export function reactivePromise<V>(dependencies: pub.Observable<any>[], initial: V, fn: () => Promise<V>) {
+    return new pub.ObservableMappedPromise(dependencies, initial, fn)
 }

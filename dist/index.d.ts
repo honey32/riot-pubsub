@@ -12,11 +12,10 @@ export declare const internals: Readonly<{
     instanceObservableDispatcher: Readonly<dispatcher.ObservableDispatcher>;
 }>;
 export declare const subMixin: {
-    subAll(...props: pub.Pub<any>[]): void;
     sub(map: {
         [name: string]: pub.Observable<any>;
     }): void;
     imitate(model: object): void;
 };
 export declare function reactive<V>(dependencies: pub.Observable<any>[], fn: () => V): pub.ObservableMapped<V, any>;
-export declare function reactivePromise<V>(dependencies: pub.Observable<any>[], fn: () => Promise<V>): pub.ObservableMappedPromise<V, any>;
+export declare function reactivePromise<V>(dependencies: pub.Observable<any>[], initial: V, fn: () => Promise<V>): pub.ObservableMappedPromise<V, any>;
