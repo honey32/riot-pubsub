@@ -8,11 +8,6 @@ function subscribe(context: any, prop: Observable<any>, name: string) {
 }
 
 export const mixin = {
-    subAll(...props: Pub<any>[]) {
-        props.forEach(prop => {
-            subscribe(this, prop, prop.name)
-        })
-    },
     sub(map: {[name: string]: Observable<any>}) {
         for (const key in map) {
             subscribe(this, map[key], key)
@@ -22,7 +17,7 @@ export const mixin = {
         for (const key in model) {
             const prop = model[key]
             if (prop && (typeof prop.on === 'function')) {
-                subscribe(this, <Observable<any>>prop, prop.name || key)
+                subscribe(this, <Observable<any>>prop, key)
             }
         }
     }

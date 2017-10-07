@@ -79,7 +79,7 @@ export abstract class Pub<V> extends Observable<V> {
     readonly isMutable: boolean
     readonly isContributable: boolean
 
-    constructor(value: V, public name: string) {
+    constructor(value: V) {
         super()
         this._value = value
     }
