@@ -39,8 +39,9 @@ export class ObservableMapped<V, B> extends Observable<V> {
 export class ObservableMappedPromise<V, B> extends Observable<V> {
     private _value: V
 
-    constructor(dependencies: Observable<B>[], fn: () => Promise<V>) {
+    constructor(dependencies: Observable<B>[], initial: V, fn: () => Promise<V>) {
         super()
+        this._value = initial
         fn().then(value => {
             this._value = value
         })
