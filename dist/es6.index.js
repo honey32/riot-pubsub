@@ -140,7 +140,7 @@ class ObservableDispatcher {
         this.observable.on('update', (anotherObj, newValue, ...rest) => {
             const found = objects.find((e) => anotherObj === e);
             if (found) {
-                fn(found.name, found.value, ...rest);
+                fn(...rest);
             }
         });
     }
@@ -154,17 +154,33 @@ class Observable {
     on(event, fn) {
         instance.on(this, event, fn);
     }
-    map(fn) {
-        return new ObservableMapped(fn, this);
-    }
 }
 class ObservableMapped extends Observable {
-    constructor(fn, base) {
+    constructor(dependencies, fn) {
         super();
-        this._value = fn(base.value);
-        base.on('update', (n, ...args) => {
-            this._value = fn(n);
-            this.trigger('update', this._value, ...args);
+        this._value = fn();
+        instance.onAnyUpdate(dependencies, () => {
+            const oldValue = this._value;
+            this._value = fn();
+            this.trigger('update', this._value, true, oldValue);
+        });
+    }
+    get value() {
+        return this._value;
+    }
+}
+class ObservableMappedPromise extends Observable {
+    constructor(dependencies, fn) {
+        super();
+        fn().then(value => {
+            this._value = value;
+        });
+        instance.onAnyUpdate(dependencies, () => {
+            const oldValue = this._value;
+            fn().then(value => {
+                this._value = value;
+                this.trigger('update', value, true, oldValue);
+            });
         });
     }
     get value() {
@@ -291,8 +307,13 @@ const internals = Object.freeze({
     ObservableDispatcher: ObservableDispatcher,
     instanceObservableDispatcher: instance
 });
-const onAnyUpdate = instance.onAnyUpdate.bind(instance);
 const subMixin = mixin;
+function reactive(dependencies, fn) {
+    return new ObservableMapped(dependencies, fn);
+}
+function reactivePromise(dependencies, fn) {
+    return new ObservableMappedPromise(dependencies, fn);
+}
 
-export { Pub, internals, onAnyUpdate, subMixin };
+export { Pub, internals, subMixin, reactive, reactivePromise };
 //# sourceMappingURL=es6.index.js.map

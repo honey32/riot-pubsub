@@ -11,7 +11,6 @@ export declare const internals: Readonly<{
     ObservableDispatcher: typeof dispatcher.ObservableDispatcher;
     instanceObservableDispatcher: Readonly<dispatcher.ObservableDispatcher>;
 }>;
-export declare const onAnyUpdate: any;
 export declare const subMixin: {
     subAll(...props: pub.Pub<any>[]): void;
     sub(map: {
@@ -19,3 +18,5 @@ export declare const subMixin: {
     }): void;
     imitate(model: object): void;
 };
+export declare function reactive<V>(dependencies: pub.Observable<any>[], fn: () => V): pub.ObservableMapped<V, any>;
+export declare function reactivePromise<V>(dependencies: pub.Observable<any>[], fn: () => Promise<V>): pub.ObservableMappedPromise<V, any>;

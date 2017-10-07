@@ -2,11 +2,15 @@ export declare abstract class Observable<V> {
     readonly value: V;
     trigger(event: 'update' | 'contribute', newValue: V, isReassigned: boolean, oldValue?: V): void;
     on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
-    map<B>(fn: (V) => B): ObservableMapped<B, V>;
 }
 export declare class ObservableMapped<V, B> extends Observable<V> {
     private _value;
-    constructor(fn: (B) => V, base: Observable<B>);
+    constructor(dependencies: Observable<B>[], fn: () => V);
+    readonly value: V;
+}
+export declare class ObservableMappedPromise<V, B> extends Observable<V> {
+    private _value;
+    constructor(dependencies: Observable<B>[], fn: () => Promise<V>);
     readonly value: V;
 }
 export interface Flag {

@@ -1,4 +1,4 @@
-const {Pub, subMixin, onAnyUpdate } = require('../dist/index.js')
+const {Pub, subMixin, reactive, internals } = require('../dist/index.js')
 
 const {testAll, test, assert} = require('./util')
 
@@ -29,7 +29,10 @@ testAll(
         .promisesTruth(set =>
             new Promise((resolve, reject) => {
                 const [a, b, changeName, changeValue] = set
-                onAnyUpdate([a, b], (name, newValue) => resolve(name === changeName && newValue === changeValue))
+                internals.instanceObservableDispatcher
+                    .onAnyUpdate([a, b], (name, newValue) => 
+                        resolve(true)
+                    )
                 a.value = changeValue
                 setTimeout(() => reject(), 1000)
             })
@@ -49,14 +52,25 @@ testAll(
             pub.on('contribute', () => reject('contribute'))
             setTimeout(() => resolve(true), 1000)
         })),
-    test('Observable#map')
+    test('reactive')
         .expectsSuccess(() => {
             const pub = Pub.create('a', '')
-            const mapped = pub.map(s => s + 'b')
+            const mapped = reactive([pub], () => pub.value + 'b')
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
         }),
+    test('reactivePromise')
+        .promisesTruth(() => new Promise((resolve, reject) => {
+            const pub = Pub.create('a', '')
+            const mapped = reactive([pub], () => pub.value + 'b')
+            mapped.on('update', newValue => {
+                resolve(mapped.value === 'bb')
+            })
+            pub.value = 'b'
+
+            setTimeout(() => reject(), 1000)
+        })),
     test('mutable pub')
         .for(true, false)
         .expectsSuccess(contributable => {

@@ -11,21 +11,18 @@ export abstract class Observable<V> {
     on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any) {
         dispatcher.on(this, event, fn)
     }
-
-    map<B>(fn: (V) => B) {
-        return new ObservableMapped<B, V>(fn, this)
-    }
 }
 
 export class ObservableMapped<V, B> extends Observable<V> {
     private _value: V
 
-    constructor(fn: (B) => V, base: Observable<B>) {
+    constructor(dependencies: Observable<B>[], fn: () => V) {
         super()
-        this._value = fn(base.value)
-        base.on('update', (n, ...args) => {
-            this._value = fn(n);
-            (<(e: 'update', v: V, ...rest: any[]) => any>this.trigger)('update', this._value, ...args)
+        this._value = fn()
+        dispatcher.onAnyUpdate(dependencies, () => {
+            const oldValue = this._value
+            this._value = fn()
+            this.trigger('update', this._value, true, oldValue)
         })
     }
 
@@ -33,6 +30,29 @@ export class ObservableMapped<V, B> extends Observable<V> {
         return this._value
     }
 }
+
+export class ObservableMappedPromise<V, B> extends Observable<V> {
+    private _value: V
+
+    constructor(dependencies: Observable<B>[], fn: () => Promise<V>) {
+        super()
+        fn().then(value => {
+            this._value = value
+        })
+        dispatcher.onAnyUpdate(dependencies, () => {
+            const oldValue = this._value
+            fn().then(value => {
+                this._value = value
+                this.trigger('update', value, true, oldValue)
+            })
+        })
+    }
+
+    get value(): V {
+        return this._value
+    }
+}
+
 
 export interface Flag {
     muatable?: boolean

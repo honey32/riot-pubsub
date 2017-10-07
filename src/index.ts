@@ -15,5 +15,12 @@ export const internals = Object.freeze({
     instanceObservableDispatcher: dispatcher.instance
 })
 
-export const onAnyUpdate = dispatcher.instance.onAnyUpdate.bind(dispatcher.instance)
 export const subMixin = sub.mixin
+
+export function reactive<V>(dependencies: pub.Observable<any>[], fn: () => V) {
+    return new pub.ObservableMapped(dependencies, fn)
+}
+
+export function reactivePromise<V>(dependencies: pub.Observable<any>[], fn: () => Promise<V>) {
+    return new pub.ObservableMappedPromise(dependencies, fn)
+}

@@ -1,5 +1,5 @@
 import observable from 'riot-observable'
-import { Pub } from './pub'
+import { Observable } from './pub'
 
 export class ObservableDispatcher {
     observable: any
@@ -35,18 +35,13 @@ export class ObservableDispatcher {
     }
 
     onAnyUpdate(
-        objects: Pub<any>[],
-        fn: (
-            propName: string,
-            newValue: any,
-            isReassign: boolean,
-            oldValue?: any
-        ) => any
+        objects: Observable<any>[],
+        fn: (...args: any[]) => any
     ) {
         this.observable.on('update', (anotherObj, newValue, ...rest) => {
             const found = objects.find((e) => anotherObj === e)
             if (found) {
-                (<(...args: any[]) => any>fn)(found.name, found.value, ...rest)
+                fn(...rest)
             }
         })
     }
