@@ -257,19 +257,32 @@ class PubWithProps$1 extends PubMutable {
 class NestedProperty extends Observable {
     constructor(parent, provider) {
         super();
-        this._value = provider(parent.value).value;
+        function safeValue(p) {
+            if (!p) {
+                return null;
+            }
+            if (!provider(p)) {
+                return null;
+            }
+            return provider(p).value;
+        }
+        this._value = safeValue(parent.value);
         const listener = (newValue, isReassigned, oldValue) => {
             this._value = newValue;
             this.trigger('update', newValue, isReassigned, oldValue);
         };
-        provider(parent.value).on('update', listener);
+        if (parent.value) {
+            provider(parent.value).on('update', listener);
+        }
         parent.on('update', (newValue, isReassigned, oldValue) => {
             if (isReassigned) {
-                if (provider(oldValue)) {
+                if (oldValue) {
                     provider(oldValue).off('update', listener);
                 }
-                this._value = provider(newValue).value;
-                provider(newValue).on('update', listener);
+                this._value = safeValue(newValue);
+                if (newValue) {
+                    provider(newValue).on('update', listener);
+                }
             }
         });
     }

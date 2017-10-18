@@ -103,9 +103,11 @@ testAll(
             const A = new HasA(v1)
             const B = new HasA(v3)
             
-            const pub = new PubWithProps(A)
+            const pub = new PubWithProps(null)
             
             pub.a = pub.createProperty(value => value.a)
+            assertValue(null)
+            pub.value = A
             A.a.value = v2
             assertValue(v2)
             pub.value = B
@@ -115,6 +117,8 @@ testAll(
             A.a.value = v1
             pub.value = A
             assertValue(v1)
+            pub.value = null
+            assertValue(null)
         })
 )
 
