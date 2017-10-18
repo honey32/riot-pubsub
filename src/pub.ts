@@ -104,9 +104,9 @@ export abstract class Pub<V> extends Observable<V> {
     static create<V>(value: V, flag: FlagMutable): PubMutable<V>
     static create<V>(value: V, flag: FlagContributable): PubImmutableContributable<V>
     static create<V>(value: V, flag?: Flag): PubImmutable<V>
-    static create<V>(value: V, flag?: Flag): Pub<V> {
-        const mutable = flag && flag['mutable']
-        const contributable = flag && flag['contributable']
+    static create<V>(value: V, flag?: any): Pub<V> {
+        const mutable = flag && flag.mutable
+        const contributable = flag && flag.contributable
         
         if (mutable) { 
             return contributable ? new PubMutableContributable(value) : new PubMutable(value)
@@ -138,6 +138,40 @@ export class PubMutable<V> extends Pub<V> implements Mutable<V> {
     mutate(fn: (value: V) => any): void {
         fn(this.value)
         this.trigger('update', this.value, false)
+    }
+}
+
+export class PubWithProps<V> extends PubMutable<V> {
+    constructor(value: V) { 
+        super(value)
+    }
+
+    createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean) {
+        return new NestedProperty(this, valueProvider)
+    }
+}
+
+export class NestedProperty<P, V> extends Observable<V> {
+    private _value: V
+
+    constructor(parent: PubWithProps<P>, provider: (parentValue: P) => Observable<V>) {
+        super()
+        this._value = provider(parent.value).value
+
+        const listener = (newValue, isReassigned, oldValue) => {
+            this._value = newValue
+            this.trigger('update', newValue, isReassigned, oldValue)
+        }
+
+        provider(parent.value).on('update', listener)
+
+        parent.on('update', (newValue, isReassigned, oldValue) => {
+            if (isReassigned) {
+                provider(oldValue).off('update', listener)
+                this._value = provider(newValue).value
+                provider(newValue).on('update', listener)
+            }
+        })
     }
 }
 

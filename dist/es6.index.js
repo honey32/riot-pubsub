@@ -212,8 +212,8 @@ class Pub$1 extends Observable {
         this.trigger('update', newValue, true, oldValue);
     }
     static create(value, flag) {
-        const mutable = flag && flag['mutable'];
-        const contributable = flag && flag['contributable'];
+        const mutable = flag && flag.mutable;
+        const contributable = flag && flag.contributable;
         if (mutable) {
             return contributable ? new PubMutableContributable(value) : new PubMutable(value);
         }
@@ -238,6 +238,32 @@ class PubMutable extends Pub$1 {
     mutate(fn) {
         fn(this.value);
         this.trigger('update', this.value, false);
+    }
+}
+class PubWithProps$1 extends PubMutable {
+    constructor(value) {
+        super(value);
+    }
+    createProperty(valueProvider, mutable) {
+        return new NestedProperty(this, valueProvider);
+    }
+}
+class NestedProperty extends Observable {
+    constructor(parent, provider) {
+        super();
+        this._value = provider(parent.value).value;
+        const listener = (newValue, isReassigned, oldValue) => {
+            this._value = newValue;
+            this.trigger('update', newValue, isReassigned, oldValue);
+        };
+        provider(parent.value).on('update', listener);
+        parent.on('update', (newValue, isReassigned, oldValue) => {
+            if (isReassigned) {
+                provider(oldValue).off('update', listener);
+                this._value = provider(newValue).value;
+                provider(newValue).on('update', listener);
+            }
+        });
     }
 }
 class PubImmutableContributable extends Pub$1 {
@@ -299,11 +325,13 @@ const mixin = {
 };
 
 const Pub = Pub$1;
+const PubWithProps = PubWithProps$1;
 const internals = Object.freeze({
     Observable: Observable,
     ObservableMapped: ObservableMapped,
     PubImmutable: PubImmutable,
     PubMutable: PubMutable,
+    NestedProperty: NestedProperty,
     PubImmutableContributable: PubImmutableContributable,
     PubMutableContributable: PubMutableContributable,
     ObservableDispatcher: ObservableDispatcher,
@@ -317,5 +345,5 @@ function reactivePromise(dependencies, initial, fn) {
     return new ObservableMappedPromise(dependencies, initial, fn);
 }
 
-export { Pub, internals, subMixin, reactive, reactivePromise };
+export { Pub, PubWithProps, internals, subMixin, reactive, reactivePromise };
 //# sourceMappingURL=es6.index.js.map

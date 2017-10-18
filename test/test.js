@@ -1,4 +1,4 @@
-const {Pub, subMixin, reactive, internals } = require('../dist/index.js')
+const {Pub, PubWithProps, subMixin, reactive, internals } = require('../dist/index.js')
 
 const {testAll, test, assert} = require('./util')
 
@@ -90,6 +90,21 @@ testAll(
             assert.eq(prev, mixin[propName])
             pub.value = newValue
             assert.eq(newValue, mixin[propName])
+        }),
+    test('nesting of property')
+        .for(['A', 'B'])
+        .expectsSuccess((v1, v2) => {
+            class HasA {
+                constructor(a) { this.a = Pub.create(a) }
+            }
+            const A = new HasA(v1)
+            const B = new HasA(v2)
+            
+            const pub = new PubWithProps(A)
+            
+            pub.a = pub.createProperty(value => value.a)
+            pub.value = B
+            assert.eq(pub.a.value, v2)
         })
 )
 

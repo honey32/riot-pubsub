@@ -1,11 +1,13 @@
 import * as pub from './pub';
 import * as dispatcher from './dispatcher';
 export declare const Pub: typeof pub.Pub;
+export declare const PubWithProps: typeof pub.PubWithProps;
 export declare const internals: Readonly<{
     Observable: typeof pub.Observable;
     ObservableMapped: typeof pub.ObservableMapped;
     PubImmutable: typeof pub.PubImmutable;
     PubMutable: typeof pub.PubMutable;
+    NestedProperty: typeof pub.NestedProperty;
     PubImmutableContributable: typeof pub.PubImmutableContributable;
     PubMutableContributable: typeof pub.PubMutableContributable;
     ObservableDispatcher: typeof dispatcher.ObservableDispatcher;

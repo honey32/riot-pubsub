@@ -54,6 +54,14 @@ export declare class PubMutable<V> extends Pub<V> implements Mutable<V> {
     readonly isContributable: false;
     mutate(fn: (value: V) => any): void;
 }
+export declare class PubWithProps<V> extends PubMutable<V> {
+    constructor(value: V);
+    createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean): any;
+}
+export declare class NestedProperty<P, V> extends Observable<V> {
+    private _value;
+    constructor(parent: PubWithProps<P>, provider: (parentValue: P) => Observable<V>);
+}
 export declare class PubImmutableContributable<V> extends Pub<V> implements Contributable<V> {
     readonly isMutable: false;
     readonly isContributable: true;

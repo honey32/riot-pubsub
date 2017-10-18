@@ -3,12 +3,14 @@ import * as sub from './sub'
 import * as dispatcher from './dispatcher'
 
 export const Pub = pub.Pub
+export const PubWithProps = pub.PubWithProps
 
 export const internals = Object.freeze({
     Observable: pub.Observable,
     ObservableMapped: pub.ObservableMapped,
     PubImmutable: pub.PubImmutable,
     PubMutable: pub.PubMutable,
+    NestedProperty: pub.NestedProperty,
     PubImmutableContributable: pub.PubImmutableContributable,
     PubMutableContributable: pub.PubMutableContributable,
     ObservableDispatcher: dispatcher.ObservableDispatcher,
