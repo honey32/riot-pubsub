@@ -7,25 +7,25 @@ testAll(
         .for([true, true], [true, false], [false, true], [false, false])
         .expectsSuccess(pair => {
             const [mutable, contributable] = pair
-            const pub = Pub.create(0, '', { mutable, contributable })
+            const pub = Pub.create(0, { mutable, contributable })
 
             assert.eq(pub.isMutable, mutable)
             assert.eq(pub.isContributable, contributable)
         }),
     test('Pub#value property works')
-        .for(Pub.create('a', ''), Pub.create('b', ''))
+        .for(Pub.create('a'), Pub.create('b'))
         .expectsSuccess(pub => {
             pub.value = 'b'
             assert.eq(pub.value, 'b')
         }),
     test('event fired correctly')
-        .for(Pub.create('a', ''))
+        .for(Pub.create('a'))
         .promisesTruth(pub => new Promise((resolve, reject) => {
             pub.on('update', (newValue) => resolve(newValue === 'b'))
             pub.trigger('update', 'b')
         })),
     test('onAnyUpdate works')
-        .for([Pub.create('a', 'pubA'), Pub.create('b', 'pubB'), 'pubA', 'A'])
+        .for([Pub.create('a'), Pub.create('b'), 'pubA', 'A'])
         .promisesTruth(set =>
             new Promise((resolve, reject) => {
                 const [a, b, changeName, changeValue] = set
@@ -38,7 +38,7 @@ testAll(
             })
         ),
     test('Immutable Pub prevents update correctly')
-        .for(Pub.create('a', ''), Pub.create('a', '', {contributable: true}))
+        .for(Pub.create('a'), Pub.create('a', {contributable: true}))
         .promisesTruth(pub => 
             new Promise((resolve, reject) => {
                 pub.on('update', () => reject('update'))
@@ -47,14 +47,14 @@ testAll(
             })  
         ),
     test('Immutable Pub prevent contribution')
-        .for(Pub.create('a', '', {contributable: true}))
+        .for(Pub.create('a', {contributable: true}))
         .promisesTruth(pub => new Promise((resolve, reject) => {
             pub.on('contribute', () => reject('contribute'))
             setTimeout(() => resolve(true), 1000)
         })),
     test('reactive')
         .expectsSuccess(() => {
-            const pub = Pub.create('a', '')
+            const pub = Pub.create('a')
             const mapped = reactive([pub], () => pub.value + 'b')
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
@@ -62,7 +62,7 @@ testAll(
         }),
     test('reactivePromise')
         .promisesTruth(() => new Promise((resolve, reject) => {
-            const pub = Pub.create('a', '')
+            const pub = Pub.create('a')
             const mapped = reactive([pub], () => pub.value + 'b')
             mapped.on('update', newValue => {
                 resolve(mapped.value === 'bb')
@@ -74,7 +74,7 @@ testAll(
     test('mutable pub')
         .for(true, false)
         .expectsSuccess(contributable => {
-            const pub = Pub.create([], '', {mutable: true, contributable})            
+            const pub = Pub.create([], {mutable: true, contributable})            
             pub.mutate(value => {
                 value.push('a')
             })
@@ -84,7 +84,7 @@ testAll(
         .for(['a', 'b', 'prop'])
         .expectsSuccess(set => {
             const [prev, newValue, propName] = set
-            const pub = Pub.create(prev, propName)
+            const pub = Pub.create(prev)
             const mixin = {...subMixin, update(obj){ Object.assign(this, obj) }}
             mixin.sub({[propName]: pub})
             assert.eq(prev, mixin[propName])
