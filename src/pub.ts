@@ -154,6 +154,8 @@ export class PubWithProps<V> extends PubMutable<V> {
 export class NestedProperty<P, V> extends Observable<V> {
     private _value: V
 
+    get value() { return this._value }
+
     constructor(parent: PubWithProps<P>, provider: (parentValue: P) => Observable<V>) {
         super()
         this._value = provider(parent.value).value
@@ -167,7 +169,9 @@ export class NestedProperty<P, V> extends Observable<V> {
 
         parent.on('update', (newValue, isReassigned, oldValue) => {
             if (isReassigned) {
-                provider(oldValue).off('update', listener)
+                if (provider(oldValue)) {
+                    provider(oldValue).off('update', listener)
+                }
                 this._value = provider(newValue).value
                 provider(newValue).on('update', listener)
             }

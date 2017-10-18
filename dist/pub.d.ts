@@ -60,6 +60,7 @@ export declare class PubWithProps<V> extends PubMutable<V> {
 }
 export declare class NestedProperty<P, V> extends Observable<V> {
     private _value;
+    readonly value: V;
     constructor(parent: PubWithProps<P>, provider: (parentValue: P) => Observable<V>);
 }
 export declare class PubImmutableContributable<V> extends Pub<V> implements Contributable<V> {

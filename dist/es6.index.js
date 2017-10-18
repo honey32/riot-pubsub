@@ -259,12 +259,15 @@ class NestedProperty extends Observable {
         provider(parent.value).on('update', listener);
         parent.on('update', (newValue, isReassigned, oldValue) => {
             if (isReassigned) {
-                provider(oldValue).off('update', listener);
+                if (provider(oldValue)) {
+                    provider(oldValue).off('update', listener);
+                }
                 this._value = provider(newValue).value;
                 provider(newValue).on('update', listener);
             }
         });
     }
+    get value() { return this._value; }
 }
 class PubImmutableContributable extends Pub$1 {
     constructor() {
