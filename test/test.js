@@ -92,19 +92,29 @@ testAll(
             assert.eq(newValue, mixin[propName])
         }),
     test('nesting of property')
-        .for(['A', 'B'])
-        .expectsSuccess((v1, v2) => {
+        .for(['A', 'AA', 'B', 'BB'])
+        .expectsSuccess((v1, v2, v3, v4) => {
+            function assertValue(v) {
+                assert.eq(pub.a.value, v)
+            }
             class HasA {
                 constructor(a) { this.a = Pub.create(a) }
             }
             const A = new HasA(v1)
-            const B = new HasA(v2)
+            const B = new HasA(v3)
             
             const pub = new PubWithProps(A)
             
             pub.a = pub.createProperty(value => value.a)
+            A.a = v2
+            assertValue(v2)
             pub.value = B
-            assert.eq(pub.a.value, v2)
+            assertValue(v3)
+            B.a = v4
+            assertValue(v4)
+            A.a = v1
+            pub.value = A
+            assertValue(v1)
         })
 )
 
