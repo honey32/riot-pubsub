@@ -55,7 +55,7 @@ testAll(
     test('reactive')
         .expectsSuccess(() => {
             const pub = Pub.create('a')
-            const mapped = reactive([pub], () => pub.value + 'b')
+            const mapped = reactive([pub], (value) => value + 'b')
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')

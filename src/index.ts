@@ -19,10 +19,10 @@ export const internals = Object.freeze({
 
 export const subMixin = sub.mixin
 
-export function reactive<V>(dependencies: pub.Observable<any>[], fn: () => V) {
+export function reactive<V>(dependencies: pub.Observable<any>[], fn: (...values: any[]) => V) {
     return new pub.ObservableMapped(dependencies, fn)
 }
 
-export function reactivePromise<V>(dependencies: pub.Observable<any>[], initial: V, fn: () => Promise<V>) {
+export function reactivePromise<V>(dependencies: pub.Observable<any>[], initial: V, fn: (...values: any[]) => Promise<V>) {
     return new pub.ObservableMappedPromise(dependencies, initial, fn)
 }

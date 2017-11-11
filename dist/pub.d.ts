@@ -4,14 +4,14 @@ export declare abstract class Observable<V> {
     on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): ((newValue: V, isReassigned: boolean, oldValue?: V) => any);
     off(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
 }
-export declare class ObservableMapped<V, B> extends Observable<V> {
+export declare class ObservableMapped<V> extends Observable<V> {
     private _value;
-    constructor(dependencies: Observable<B>[], fn: () => V);
+    constructor(dependencies: Observable<any>[], fn: (...args: any[]) => V);
     readonly value: V;
 }
-export declare class ObservableMappedPromise<V, B> extends Observable<V> {
+export declare class ObservableMappedPromise<V> extends Observable<V> {
     private _value;
-    constructor(dependencies: Observable<B>[], initial: V, fn: () => Promise<V>);
+    constructor(dependencies: Observable<any>[], initial: V, fn: (...args: any[]) => Promise<V>);
     readonly value: V;
 }
 export interface Flag {

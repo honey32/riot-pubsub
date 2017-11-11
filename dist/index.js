@@ -171,10 +171,10 @@ class Observable {
 class ObservableMapped extends Observable {
     constructor(dependencies, fn) {
         super();
-        this._value = fn();
+        this._value = fn(...dependencies.map(obs => obs.value));
         instance.onAnyUpdate(dependencies, () => {
             const oldValue = this._value;
-            this._value = fn();
+            this._value = fn(...dependencies.map(obs => obs.value));
             this.trigger('update', this._value, true, oldValue);
         });
     }
@@ -186,12 +186,12 @@ class ObservableMappedPromise extends Observable {
     constructor(dependencies, initial, fn) {
         super();
         this._value = initial;
-        fn().then(value => {
+        fn(...dependencies.map(obs => obs.value)).then(value => {
             this._value = value;
         });
         instance.onAnyUpdate(dependencies, () => {
             const oldValue = this._value;
-            fn().then(value => {
+            fn(...dependencies.map(obs => obs.value)).then(value => {
                 this._value = value;
                 this.trigger('update', value, true, oldValue);
             });
