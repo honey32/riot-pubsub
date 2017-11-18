@@ -21,7 +21,7 @@ export abstract class Observable<V> {
 export class ObservableMapped<V> extends Observable<V> {
     private _value: V
 
-    constructor(dependencies: Observable<any>[], fn: (...args: any[]) => V) {
+    constructor(private dependencies: Observable<any>[], private fn: (...args: any[]) => V) {
         super()
         this._value = fn(...dependencies.map(obs => obs.value))
         dispatcher.onAnyUpdate(dependencies, () => {
@@ -34,12 +34,18 @@ export class ObservableMapped<V> extends Observable<V> {
     get value(): V {
         return this._value
     }
+
+    sync(): void {
+        const oldValue = this._value
+        this._value = this.fn(...this.dependencies.map(obs => obs.value))
+        this.trigger('update', this._value, true, oldValue)
+    }
 }
 
 export class ObservableMappedPromise<V> extends Observable<V> {
     private _value: V
 
-    constructor(dependencies: Observable<any>[], initial: V, fn: (...args: any[]) => Promise<V>) {
+    constructor(private dependencies: Observable<any>[], initial: V, private fn: (...args: any[]) => Promise<V>) {
         super()
         this._value = initial
         fn(...dependencies.map(obs => obs.value)).then(value => {
@@ -56,6 +62,14 @@ export class ObservableMappedPromise<V> extends Observable<V> {
 
     get value(): V {
         return this._value
+    }
+
+    sync(): void {
+        const oldValue = this._value
+        this.fn(...this.dependencies.map(obs => obs.value)).then(value => {
+            this._value = value
+            this.trigger('update', value, true, oldValue)
+        })
     }
 }
 

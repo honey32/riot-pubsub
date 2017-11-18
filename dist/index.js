@@ -171,6 +171,8 @@ class Observable {
 class ObservableMapped extends Observable {
     constructor(dependencies, fn) {
         super();
+        this.dependencies = dependencies;
+        this.fn = fn;
         this._value = fn(...dependencies.map(obs => obs.value));
         instance.onAnyUpdate(dependencies, () => {
             const oldValue = this._value;
@@ -181,10 +183,17 @@ class ObservableMapped extends Observable {
     get value() {
         return this._value;
     }
+    sync() {
+        const oldValue = this._value;
+        this._value = this.fn(...this.dependencies.map(obs => obs.value));
+        this.trigger('update', this._value, true, oldValue);
+    }
 }
 class ObservableMappedPromise extends Observable {
     constructor(dependencies, initial, fn) {
         super();
+        this.dependencies = dependencies;
+        this.fn = fn;
         this._value = initial;
         fn(...dependencies.map(obs => obs.value)).then(value => {
             this._value = value;
@@ -199,6 +208,13 @@ class ObservableMappedPromise extends Observable {
     }
     get value() {
         return this._value;
+    }
+    sync() {
+        const oldValue = this._value;
+        this.fn(...this.dependencies.map(obs => obs.value)).then(value => {
+            this._value = value;
+            this.trigger('update', value, true, oldValue);
+        });
     }
 }
 class Pub$1 extends Observable {

@@ -5,14 +5,20 @@ export declare abstract class Observable<V> {
     off(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
 }
 export declare class ObservableMapped<V> extends Observable<V> {
+    private dependencies;
+    private fn;
     private _value;
     constructor(dependencies: Observable<any>[], fn: (...args: any[]) => V);
     readonly value: V;
+    sync(): void;
 }
 export declare class ObservableMappedPromise<V> extends Observable<V> {
+    private dependencies;
+    private fn;
     private _value;
     constructor(dependencies: Observable<any>[], initial: V, fn: (...args: any[]) => Promise<V>);
     readonly value: V;
+    sync(): void;
 }
 export interface Flag {
     muatable?: boolean;
