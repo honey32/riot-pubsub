@@ -1,4 +1,4 @@
-const {Pub, PubWithProps, subMixin, reactive, internals } = require('../dist/index.js')
+const {Pub, PubWithProps, SubMixin, reactive, internals } = require('../dist/index.js')
 
 const {testAll, test, assert} = require('./util')
 
@@ -85,9 +85,11 @@ testAll(
         .expectsSuccess(set => {
             const [prev, newValue, propName] = set
             const pub = Pub.create(prev)
-            const mixin = {...subMixin, update(obj){ Object.assign(this, obj) }}
+            let dispatched = false
+            const mixin = new SubMixin(() => { dispatched = true })
             mixin.sub({[propName]: pub})
             assert.eq(prev, mixin[propName])
+            assert.eq(true, dispatched)
             pub.value = newValue
             assert.eq(newValue, mixin[propName])
         }),

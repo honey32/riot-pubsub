@@ -1,7 +1,9 @@
 import { Observable } from './pub';
-export declare const mixin: {
+export declare class Mixin {
+    dispatcher: () => any;
+    constructor(dispatcher: () => any);
     sub(map: {
         [name: string]: Observable<any>;
     }): void;
     imitate(model: object): void;
-};
+}

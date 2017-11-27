@@ -340,27 +340,34 @@ class PubMutableContributable extends Pub$1 {
     }
 }
 
-function subscribe(context, prop, name) {
-    context.update({ [name]: prop.value });
-    prop.on('update', (newValue) => {
-        context.update({ [name]: newValue });
-    });
-}
-const mixin = {
+class Mixin {
+    constructor(dispatcher) {
+        this.dispatcher = dispatcher;
+    }
     sub(map) {
         for (const key in map) {
-            subscribe(this, map[key], key);
+            this[key] = map[key].value;
+            this.dispatcher();
+            map[key].on('update', () => {
+                this[key] = map[key].value;
+                this.dispatcher();
+            });
         }
-    },
+    }
     imitate(model) {
         for (const key in model) {
             const prop = model[key];
             if (prop && (typeof prop.on === 'function')) {
-                subscribe(this, prop, key);
+                this[key] = prop.value;
+                this.dispatcher();
+                prop.on('update', () => {
+                    this[key] = prop.value;
+                    this.dispatcher();
+                });
             }
         }
     }
-};
+}
 
 const Pub = Pub$1;
 const PubWithProps = PubWithProps$1;
@@ -375,7 +382,7 @@ const internals = Object.freeze({
     ObservableDispatcher: ObservableDispatcher,
     instanceObservableDispatcher: instance
 });
-const subMixin = mixin;
+const SubMixin = Mixin;
 function reactive(dependencies, fn) {
     return new ObservableMapped(dependencies, fn);
 }
@@ -386,7 +393,7 @@ function reactivePromise(dependencies, initial, fn) {
 exports.Pub = Pub;
 exports.PubWithProps = PubWithProps;
 exports.internals = internals;
-exports.subMixin = subMixin;
+exports.SubMixin = SubMixin;
 exports.reactive = reactive;
 exports.reactivePromise = reactivePromise;
 

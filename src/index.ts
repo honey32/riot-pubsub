@@ -17,7 +17,7 @@ export const internals = Object.freeze({
     instanceObservableDispatcher: dispatcher.instance
 })
 
-export const subMixin = sub.mixin
+export const SubMixin = sub.Mixin
 
 export function reactive<V>(dependencies: pub.Observable<any>[], fn: (...values: any[]) => V) {
     return new pub.ObservableMapped(dependencies, fn)

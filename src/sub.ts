@@ -1,23 +1,29 @@
 import { Pub, Observable } from './pub'
 
-function subscribe(context: any, prop: Observable<any>, name: string) {
-    context.update({[name]: prop.value})
-    prop.on('update', (newValue) => {
-        context.update({[name]: newValue})
-    })
-}
+export class Mixin {
+    constructor (public dispatcher: () => any) {}
 
-export const mixin = {
     sub(map: {[name: string]: Observable<any>}) {
         for (const key in map) {
-            subscribe(this, map[key], key)
+            (<any>this)[key] = map[key].value
+            this.dispatcher()
+            map[key].on('update', () => {
+                (<any>this)[key] = map[key].value
+                this.dispatcher()
+            })
         }
-    },
+    }
+
     imitate(model: object) {
         for (const key in model) {
             const prop = model[key]
             if (prop && (typeof prop.on === 'function')) {
-                subscribe(this, <Observable<any>>prop, key)
+                (<any>this)[key] = prop.value
+                this.dispatcher()
+                prop.on('update', () => {
+                    (<any>this)[key] = prop.value
+                    this.dispatcher()
+                })
             }
         }
     }
