@@ -347,10 +347,10 @@ class Mixin {
     sub(map) {
         for (const key in map) {
             this[key] = map[key].value;
-            this.dispatcher();
+            this.dispatcher(this);
             map[key].on('update', () => {
                 this[key] = map[key].value;
-                this.dispatcher();
+                this.dispatcher(this);
             });
         }
     }
@@ -359,10 +359,10 @@ class Mixin {
             const prop = model[key];
             if (prop && (typeof prop.on === 'function')) {
                 this[key] = prop.value;
-                this.dispatcher();
+                this.dispatcher(this);
                 prop.on('update', () => {
                     this[key] = prop.value;
-                    this.dispatcher();
+                    this.dispatcher(this);
                 });
             }
         }
