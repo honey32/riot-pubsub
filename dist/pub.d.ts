@@ -62,7 +62,7 @@ export declare class PubMutable<V> extends Pub<V> implements Mutable<V> {
 }
 export declare class PubWithProps<V> extends PubMutable<V> {
     constructor(value: V);
-    createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean): any;
+    createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean): NestedProperty<V, A>;
 }
 export declare class NestedProperty<P, V> extends Observable<V> {
     private _value;

@@ -161,7 +161,7 @@ export class PubWithProps<V> extends PubMutable<V> {
     }
 
     createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean) {
-        return new NestedProperty(this, valueProvider)
+        return new NestedProperty<V, A>(this, valueProvider)
     }
 }
 
