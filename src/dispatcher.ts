@@ -1,5 +1,5 @@
 import observable from 'riot-observable'
-import { Observable } from './pub'
+import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
 
 export class ObservableDispatcher {
     observable: any
@@ -56,6 +56,26 @@ export class ObservableDispatcher {
             }
         })
     }
-}
 
-export const instance = Object.freeze(new ObservableDispatcher())
+    pub<V>(value: V, isMutable: boolean = true) {
+        return new Pub(this, value, isMutable)
+    }
+
+    contributable<V>(value: V, isMutable: boolean = true) {
+        return new PubContributable(this, value, isMutable)
+    }
+
+    reactive<A1, A2, A3, V>(dependencies: [Observable<A1>, Observable<A2>, Observable<A3>], fn: (v1: A1, v2: A2, v3: A3) => V)
+    reactive<A1, A2, V>(dependencies: [Observable<A1>, Observable<A2>], fn: (v1: A1, v2: A2) => V)
+    reactive<A1, V>(dependencies: [Observable<A1>], fn: (v1: A1) => V)
+    reactive<V>(dependencies: Observable<any>[], fn: (...values: any[]) => V) {
+        return new ObservableMapped(this, dependencies, fn)
+    }
+    
+    reactivePromise<A1, A2, A3, V>(dependencies: [Observable<A1>, Observable<A2>, Observable<A3>], initial: V, fn: (v1: A1, v2: A2, v3: A3) => V)
+    reactivePromise<A1, A2, V>(dependencies: [Observable<A1>, Observable<A2>], initial: V, fn: (v1: A1, v2: A2) => V)
+    reactivePromise<A1, V>(dependencies: [Observable<A1>], initial: V, fn: (v1: A1) => V)
+    reactivePromise<V>(dependencies: Observable<any>[], initial: V, fn: (...values: any[]) => Promise<V>) {
+        return new ObservableMappedPromise(this, dependencies, initial, fn)
+    }
+}
