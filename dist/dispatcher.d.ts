@@ -1,6 +1,6 @@
 import { Observable, Pub, PubContributable } from './pub';
 export declare class ObservableDispatcher {
-    observable: any;
+    private observable;
     constructor();
     trigger<V>(object: object, event: 'update' | 'contribute', newValue: V, isReassign: boolean, oldValue?: V): void;
     on<V>(object: object, event: 'update' | 'contribute', fn: (newValue: V, isReassign: boolean, oldValue?: V) => any): void;

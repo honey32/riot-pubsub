@@ -2,7 +2,7 @@ import observable from 'riot-observable'
 import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
 
 export class ObservableDispatcher {
-    observable: any
+    private observable: any
     
     constructor() {
         this.observable = observable()
