@@ -1,11 +1,3 @@
-import * as pub from './pub';
-import * as sub from './sub';
-import * as dispatcher from './dispatcher';
-export declare const Pub: typeof pub.Pub;
-export declare const PubWithProps: typeof pub.PubWithProps;
-export declare const NestedProperty: typeof pub.NestedProperty;
-export declare const PubContributable: typeof pub.PubContributable;
-export declare const Observable: typeof pub.Observable;
-export declare const ObservableMapped: typeof pub.ObservableMapped;
-export declare const ObservableDispatcher: typeof dispatcher.ObservableDispatcher;
-export declare const SubMixin: typeof sub.Mixin;
+export * from './pub';
+export * from './sub';
+export * from './dispatcher';

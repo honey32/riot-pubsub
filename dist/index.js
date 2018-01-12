@@ -4,7 +4,7 @@
 	(factory((global['riot-pubsub'] = {})));
 }(this, (function (exports) { 'use strict';
 
-class Observable$1 {
+class Observable {
     constructor(dispatcher) {
         this.dispatcher = dispatcher;
     }
@@ -19,7 +19,7 @@ class Observable$1 {
         this.dispatcher.off(event, fn);
     }
 }
-class ObservableMapped$1 extends Observable$1 {
+class ObservableMapped extends Observable {
     constructor(dispatcher, dependencies, fn) {
         super(dispatcher);
         this.dependencies = dependencies;
@@ -40,7 +40,7 @@ class ObservableMapped$1 extends Observable$1 {
         this.trigger('update', this._value, true, oldValue);
     }
 }
-class ObservableMappedPromise extends Observable$1 {
+class ObservableMappedPromise extends Observable {
     constructor(dispatcher, dependencies, initial, fn) {
         super(dispatcher);
         this.dependencies = dependencies;
@@ -68,7 +68,7 @@ class ObservableMappedPromise extends Observable$1 {
         });
     }
 }
-class Pub$1 extends Observable$1 {
+class Pub extends Observable {
     constructor(dispatcher, value, isMutable = true) {
         super(dispatcher);
         this.isMutable = isMutable;
@@ -90,15 +90,15 @@ class Pub$1 extends Observable$1 {
         this.trigger('update', this.value, false);
     }
 }
-class PubWithProps$1 extends Pub$1 {
+class PubWithProps extends Pub {
     constructor(dispatcher, value) {
         super(dispatcher, value);
     }
     createProperty(valueProvider, mutable) {
-        return new NestedProperty$1(this, valueProvider);
+        return new NestedProperty(this, valueProvider);
     }
 }
-class NestedProperty$1 extends Observable$1 {
+class NestedProperty extends Observable {
     constructor(parent, provider) {
         super(parent.dispatcher);
         function safeValue(p) {
@@ -132,7 +132,7 @@ class NestedProperty$1 extends Observable$1 {
     }
     get value() { return this._value; }
 }
-class PubContributable$1 extends Pub$1 {
+class PubContributable extends Pub {
     contribute(newValue) {
         const oldValue = this._value;
         if (!this.isMutable && newValue === oldValue) {
@@ -300,7 +300,7 @@ var observable = function(el) {
 
 };
 
-class ObservableDispatcher$1 {
+class ObservableDispatcher {
     constructor() {
         this.observable = observable();
     }
@@ -326,36 +326,28 @@ class ObservableDispatcher$1 {
         });
     }
     pub(value, isMutable = true) {
-        return new Pub$1(this, value, isMutable);
+        return new Pub(this, value, isMutable);
     }
     contributable(value, isMutable = true) {
-        return new PubContributable$1(this, value, isMutable);
+        return new PubContributable(this, value, isMutable);
     }
     reactive(dependencies, fn) {
-        return new ObservableMapped$1(this, dependencies, fn);
+        return new ObservableMapped(this, dependencies, fn);
     }
     reactivePromise(dependencies, initial, fn) {
         return new ObservableMappedPromise(this, dependencies, initial, fn);
     }
 }
 
-const Pub = Pub$1;
-const PubWithProps = PubWithProps$1;
-const NestedProperty = NestedProperty$1;
-const PubContributable = PubContributable$1;
-const Observable = Observable$1;
-const ObservableMapped = ObservableMapped$1;
-const ObservableDispatcher = ObservableDispatcher$1;
-const SubMixin = Mixin;
-
+exports.Observable = Observable;
+exports.ObservableMapped = ObservableMapped;
+exports.ObservableMappedPromise = ObservableMappedPromise;
 exports.Pub = Pub;
 exports.PubWithProps = PubWithProps;
 exports.NestedProperty = NestedProperty;
 exports.PubContributable = PubContributable;
-exports.Observable = Observable;
-exports.ObservableMapped = ObservableMapped;
+exports.Mixin = Mixin;
 exports.ObservableDispatcher = ObservableDispatcher;
-exports.SubMixin = SubMixin;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
