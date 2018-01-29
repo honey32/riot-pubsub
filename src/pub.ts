@@ -105,7 +105,7 @@ export class Pub<V> extends Observable<V> {
 
 export class PubWithProps<V> extends Pub<V> {
     constructor(dispatcher: ObservableDispatcher, value: V) { 
-        super(dispatcher, value)
+        super(dispatcher, value, false)
     }
 
     createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean) {
