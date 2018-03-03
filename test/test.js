@@ -1,4 +1,4 @@
-const {Pub, PubWithProps, SubMixin, ObservableDispatcher } = require('../dist/index.js')
+const {Pub, PubWithProps, Mixin, ObservableDispatcher } = require('../dist/index.js')
 
 const {testAll, test, assert} = require('./util')
 
@@ -83,7 +83,7 @@ testAll(
             const [prev, newValue, propName] = set
             const pub = dispatcher.pub(prev)
             let dispatched = false
-            const mixin = new SubMixin(() => { dispatched = true })
+            const mixin = new Mixin(() => { dispatched = true })
             mixin.sub({[propName]: pub})
             assert.eq(prev, mixin[propName])
             assert.eq(true, dispatched)

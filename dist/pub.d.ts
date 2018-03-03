@@ -1,11 +1,11 @@
-import { ObservableDispatcher } from "./dispatcher";
+import { ObservableDispatcher, Listener } from "./dispatcher";
 export declare abstract class Observable<V> {
     dispatcher: ObservableDispatcher;
     readonly value: V;
     constructor(dispatcher: ObservableDispatcher);
     trigger(event: 'update' | 'contribute', newValue: V, isReassigned: boolean, oldValue?: V): void;
     on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): ((newValue: V, isReassigned: boolean, oldValue?: V) => any);
-    off(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): void;
+    off(event: 'update' | 'contribute', fn: Listener<V>): void;
 }
 export declare class ObservableMapped<V> extends Observable<V> {
     private dependencies;

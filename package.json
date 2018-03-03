@@ -26,7 +26,6 @@
   },
   "homepage": "https://github.com/honey32/riot-pubsub#readme",
   "devDependencies": {
-    "riot-observable": "^3.0.0",
     "rollup": "^0.49.2",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-typescript2": "^0.5.2"

@@ -1,4 +1,4 @@
-import { ObservableDispatcher } from "./dispatcher";
+import { ObservableDispatcher, Listener } from "./dispatcher";
 
 export abstract class Observable<V> {
     readonly value: V
@@ -14,7 +14,7 @@ export abstract class Observable<V> {
         return fn
     }
 
-    off(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any) {
+    off(event: 'update' | 'contribute', fn: Listener<V>) {
         this.dispatcher.off(event, fn)
     }
 }

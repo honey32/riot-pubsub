@@ -1,12 +1,11 @@
-import observable from 'riot-observable'
 import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
+
+export type Listener<A> = (obj: any, newValue: A, isReassign: boolean, oldValue?: A) => void
 
 export class ObservableDispatcher {
     private observable: any
-    
-    constructor() {
-        this.observable = observable()
-    }
+    private updateListeners: Listener<any>[] = []
+    private contributeListeners: Listener<any>[] = []
 
     trigger<V>(
         object: object,
@@ -15,7 +14,10 @@ export class ObservableDispatcher {
         isReassign: boolean,
         oldValue?: V
     ) {
-        this.observable.trigger(event, object, newValue, isReassign, oldValue)
+        const listeners = event === 'update' ? this.updateListeners: this.contributeListeners
+        for (const listener of listeners) {
+            listener(object, newValue, isReassign, oldValue)
+        }
     }
 
     on<V>(
@@ -26,35 +28,47 @@ export class ObservableDispatcher {
             isReassign: boolean,
             oldValue?: V
         ) => any
-    ) {
-        this.observable.on(event, (anotherObj, ...args) => {
-            if (anotherObj === object) {    
-                (<(...args: any[]) => any>fn)(...args)
+    ): Listener<V> {
+        const listeners = event === 'update' ? this.updateListeners: this.contributeListeners
+        const listener: Listener<V> = (obj, newValue, isReassign, oldValue) => {
+            if (obj === object) {    
+                fn(newValue, isReassign, oldValue)
             }
-        })
+        }
+        
+        listeners.push(listener)
+        return listener
     }
 
     off(
         event: 'update' | 'contribute',
         fn:  (
+            obj: object,
             newValue: any,
             isReassign: boolean,
             oldValue?: any
         ) => any
     ) {
-        this.observable.off(event, fn)
+        const listeners = event === 'update' ? this.updateListeners: this.contributeListeners
+        const idx = listeners.indexOf(fn)
+        if (idx >= 0) {
+            listeners.splice(idx, 1)
+        }
     }
 
     onAnyUpdate(
         objects: Observable<any>[],
-        fn: (...args: any[]) => any
-    ) {
-        this.observable.on('update', (anotherObj, newValue, ...rest) => {
-            const found = objects.find((e) => anotherObj === e)
-            if (found) {
-                fn(...rest)
+        fn: (obj: any, newValue: any, isReassign: boolean, oldValue?: any) => any
+    ): Listener<any> {
+        const listener: Listener<any> = (obj, newValue, isReassign, oldValue) => {
+            const found = objects.find((e) => obj === e)
+            if (found) {    
+                fn(newValue, isReassign, oldValue)
             }
-        })
+        }
+        
+        this.updateListeners.push(listener)
+        return listener
     }
 
     pub<V>(value: V, isMutable: boolean = true) {
