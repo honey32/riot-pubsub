@@ -1,12 +1,12 @@
 import { Observable, Pub, PubContributable } from './pub';
-export declare type Listener<A> = (obj: any, newValue: A, isReassign: boolean, oldValue?: A) => void;
+export declare type Listener<A> = (obj: Observable<A>, newValue: A, isReassign: boolean, oldValue?: A) => void;
 export declare class ObservableDispatcher {
     private observable;
-    private updateListeners;
-    private contributeListeners;
-    trigger<V>(object: object, event: 'update' | 'contribute', newValue: V, isReassign: boolean, oldValue?: V): void;
-    on<V>(object: object, event: 'update' | 'contribute', fn: (newValue: V, isReassign: boolean, oldValue?: V) => any): Listener<V>;
-    off(event: 'update' | 'contribute', fn: (obj: object, newValue: any, isReassign: boolean, oldValue?: any) => any): void;
+    updateListeners: Listener<any>[];
+    contributeListeners: Listener<any>[];
+    trigger<V>(object: Observable<V>, event: 'update' | 'contribute', newValue: V, isReassign: boolean, oldValue?: V): void;
+    on<V>(object: Observable<V>, event: 'update' | 'contribute', fn: (newValue: V, isReassign: boolean, oldValue?: V) => any): Listener<V>;
+    off(event: 'update' | 'contribute', fn: Listener<any>): void;
     onAnyUpdate(objects: Observable<any>[], fn: (obj: any, newValue: any, isReassign: boolean, oldValue?: any) => any): Listener<any>;
     pub<V>(value: V, isMutable?: boolean): Pub<V>;
     contributable<V>(value: V, isMutable?: boolean): PubContributable<V>;

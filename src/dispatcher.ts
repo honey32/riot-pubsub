@@ -1,14 +1,14 @@
 import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
 
-export type Listener<A> = (obj: any, newValue: A, isReassign: boolean, oldValue?: A) => void
+export type Listener<A> = (obj: Observable<A>, newValue: A, isReassign: boolean, oldValue?: A) => void
 
 export class ObservableDispatcher {
     private observable: any
-    private updateListeners: Listener<any>[] = []
-    private contributeListeners: Listener<any>[] = []
+    updateListeners: Listener<any>[] = []
+    contributeListeners: Listener<any>[] = []
 
     trigger<V>(
-        object: object,
+        object: Observable<V>,
         event: 'update' | 'contribute',
         newValue: V,
         isReassign: boolean,
@@ -21,7 +21,7 @@ export class ObservableDispatcher {
     }
 
     on<V>(
-        object: object,
+        object: Observable<V>,
         event: 'update' | 'contribute',
         fn: (
             newValue: V,
@@ -42,12 +42,7 @@ export class ObservableDispatcher {
 
     off(
         event: 'update' | 'contribute',
-        fn:  (
-            obj: object,
-            newValue: any,
-            isReassign: boolean,
-            oldValue?: any
-        ) => any
+        fn: Listener<any>
     ) {
         const listeners = event === 'update' ? this.updateListeners: this.contributeListeners
         const idx = listeners.indexOf(fn)
