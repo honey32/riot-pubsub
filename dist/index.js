@@ -208,7 +208,7 @@ class ObservableDispatcher {
         const listener = (obj, newValue, isReassign, oldValue) => {
             const found = objects.find((e) => obj === e);
             if (found) {
-                fn(newValue, isReassign, oldValue);
+                fn(obj, newValue, isReassign, oldValue);
             }
         };
         this.updateListeners.push(listener);

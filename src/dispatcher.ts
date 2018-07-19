@@ -1,6 +1,8 @@
 import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
 
 export type Listener<A> = (obj: Observable<A>, newValue: A, isReassign: boolean, oldValue?: A) => void
+export type EventArgs<A> = [A, boolean, A]
+
 
 export class ObservableDispatcher {
     private observable: any
@@ -53,12 +55,12 @@ export class ObservableDispatcher {
 
     onAnyUpdate(
         objects: Observable<any>[],
-        fn: (obj: any, newValue: any, isReassign: boolean, oldValue?: any) => any
+        fn: (obj: Observable<any>, newValue: any, isReassign: boolean, oldValue?: any) => any
     ): Listener<any> {
         const listener: Listener<any> = (obj, newValue, isReassign, oldValue) => {
             const found = objects.find((e) => obj === e)
             if (found) {    
-                fn(newValue, isReassign, oldValue)
+                fn(obj, newValue, isReassign, oldValue)
             }
         }
         
