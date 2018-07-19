@@ -1,19 +1,19 @@
-class TestUnit {
+export class TestUnit<V> {
+    description: string
+    promise: Promise<any>
+    sets: V[]
+
     /**
      * 
      * @param {string} description 
      */
-    constructor(description) {
+    constructor(description: string) {
         this.description = description
         this.promise = Promise.resolve()
         this.sets = [null]
     }
 
-    /**
-     * 
-     * @param {any[]} sets 
-     */
-    for(...sets) {
+    for(...sets: V[]) {
         this.sets = sets
         return this
     }
@@ -22,7 +22,7 @@ class TestUnit {
      * 
      * @param {function} fn 
      */
-    expectsSuccess(fn) {
+    expectsSuccess(fn: (v: V) => any) {
         const cases = this.sets.map(set => new Promise((resolve, reject) => {
             try {
                 fn(set)
@@ -35,11 +35,7 @@ class TestUnit {
         return this
     }
 
-    /**
-     * 
-     * @param {function} fn 
-     */
-    promisesTruth(fn) {
+    promisesTruth(fn: (v: V) => Promise<boolean>) {
         const cases = this.sets.map(set => 
             fn(set).then(bool => new Promise((resolve, reject) => {
                 if (bool) {
@@ -53,12 +49,8 @@ class TestUnit {
     }
 }
 
-/**
- * 
- * @param {TestUnit[]} tests 
- * @return {Promise}
- */
-function waitForEnd(tests) {
+
+function waitForEnd(tests: TestUnit<any>[]): Promise<any> {
     const length = tests.length
     let count = 0
     let countSuccess = 0
@@ -86,11 +78,8 @@ function waitForEnd(tests) {
     
 }
 
-/**
- * 
- * @param {TestUnit} test 
- */
-function print(test) {
+
+function print(test: TestUnit<any>) {
     test.promise.then(() =>
         console.log(test.description + ' : SUCCESS')
     ).catch(err => {
@@ -99,19 +88,15 @@ function print(test) {
     })
 }
 
-/**
- * 
- * @param {string} description 
- */
-function test(description) {
-    return new TestUnit(description)
+export function test<A>(description: string) {
+    return new TestUnit<A>(description)
 }
 
 /**
  * 
  * @param {TestUnit[]} tests 
  */
-function testAll(...tests) {
+export function testAll(...tests: TestUnit<any>[]) {
     waitForEnd(tests).then(countSuccess => {
         console.log('TEST RESULT:')
         console.log(`${countSuccess} of ${tests.length}  SUCCESSFUL.`)
@@ -119,18 +104,14 @@ function testAll(...tests) {
     })
 }
 
-const assert = {
-    truth(bool) {
+export const assert = {
+    truth(bool: boolean) {
         console.assert(bool, `expected to be true, but actually ${bool} `)
     },
-    false(bool) {
+    false(bool: boolean) {
         console.assert(!bool, `expected to br false, but actually ${bool}`)
     },
-    eq(left, right) {
+    eq<A>(left: A, right: A) {
         console.assert(left === right, `expected equality, but ${left} !== ${right}`)
     }
-}
-
-module.exports = {
-    test, testAll, assert
 }

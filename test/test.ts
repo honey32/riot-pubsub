@@ -1,29 +1,29 @@
-const {Pub, PubWithProps, Mixin, ObservableDispatcher } = require('../dist/index.js')
+import { Pub, PubWithProps, Mixin, ObservableDispatcher, Observable } from '../dist/index.js'
 
-const {testAll, test, assert} = require('./util')
+import { testAll, test, assert } from './util'
 
 const dispatcher = new ObservableDispatcher()
 
 testAll(
-    test('factory method works')
+    test<boolean>('factory method works')
         .for(true)
         .expectsSuccess(isMutable => {
             const pub = dispatcher.pub(0, isMutable)
             assert.eq(pub.isMutable, isMutable)
         }),
-    test('Pub#value property works')
+    test<Pub<string>>('Pub#value property works')
         .for(dispatcher.pub('a'), dispatcher.pub('b'))
         .expectsSuccess(pub => {
             pub.value = 'b'
             assert.eq(pub.value, 'b')
         }),
-    test('event fired correctly')
+    test<Pub<string>>('event fired correctly')
         .for(dispatcher.pub('a'))
         .promisesTruth(pub => new Promise((resolve, reject) => {
             pub.on('update', (newValue) => resolve(newValue === 'b'))
-            pub.trigger('update', 'b')
+            pub.trigger('update', 'b', true)
         })),
-    test('onAnyUpdate works')
+    test<[Pub<string>, Pub<string>, string, string]>('onAnyUpdate works')
         .for([dispatcher.pub('a'), dispatcher.pub('b'), 'pubA', 'A'])
         .promisesTruth(set =>
             new Promise((resolve, reject) => {
@@ -35,7 +35,7 @@ testAll(
                 setTimeout(() => reject(), 1000)
             })
         ),
-    test('Immutable Pub prevents update correctly')
+    test<Pub<string>>('Immutable Pub prevents update correctly')
         .for(dispatcher.pub('a', false), dispatcher.contributable('a', false))
         .promisesTruth(pub => 
             new Promise((resolve, reject) => {
@@ -44,7 +44,7 @@ testAll(
                 setTimeout(() => resolve(true), 1000)
             })  
         ),
-    test('Immutable Pub prevent contribution')
+    test<Pub<string>>('Immutable Pub prevent contribution')
         .for(dispatcher.contributable('a', false))
         .promisesTruth(pub => new Promise((resolve, reject) => {
             pub.on('contribute', () => reject('contribute'))
@@ -77,7 +77,7 @@ testAll(
             })
             assert.eq(pub.value[0], 'a')
         }),
-    test('mixin')
+    test<string[]>('mixin')
         .for(['a', 'b', 'prop'])
         .expectsSuccess(set => {
             const [prev, newValue, propName] = set
@@ -90,21 +90,29 @@ testAll(
             pub.value = newValue
             assert.eq(newValue, mixin[propName])
         }),
-    test('nesting of property')
+    test<string[]>('nesting of property')
         .for(['A', 'AA', 'B', 'BB'])
         .expectsSuccess(([v1, v2, v3, v4]) => {
             function assertValue(v) {
                 assert.eq(pub.a.value, v)
             }
             class HasA {
+                a: Pub<string>
                 constructor(a) { this.a = dispatcher.pub(a) }
             }
             const A = new HasA(v1)
             const B = new HasA(v3)
             
-            const pub = new PubWithProps(dispatcher, null)
             
-            pub.a = pub.createProperty(value => value.a)
+            class PubHasA extends PubWithProps<HasA> {
+                a = this.createProperty<string>(value => value.a)
+
+                constructor() {
+                    super(dispatcher, null)
+                }
+            }
+            const pub = new PubHasA()
+            
             assertValue(null)
             pub.value = A
             A.a.value = v2
