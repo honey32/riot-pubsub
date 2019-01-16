@@ -27,15 +27,16 @@ export class ObservableSubscribing<V, T> extends Observable<V> {
             private action: (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void) {
         super(dispatcher)
         this.value = initial
+        this.target.on('update', (e) => this.action(this, e))
     }
 
     get value() {
         return this._value
     }
 
-    set value(v: V) {
-        this._value = v
-        this.target.on('update', (e) => this.action(this, e))
+    set value(newValue: V) {
+        this._value = newValue
+        this.trigger({ type: 'update', newValue, isReassigned: true })
     }
 }
 
