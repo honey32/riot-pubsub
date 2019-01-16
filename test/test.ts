@@ -59,17 +59,17 @@ testAll(
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
         }),
-    test('reactivePromise')
-        .promisesTruth(() => new Promise((resolve, reject) => {
-            const pub = dispatcher.pub('a')
-            const mapped = dispatcher.reactivePromise(pub)('a', (s) => Promise.resolve(s + 'b'))
-            mapped.on('update', e => {
-                resolve(mapped.value === 'bb')
-            })
-            pub.value = 'b'
+    // test('reactivePromise')
+    //     .promisesTruth(() => new Promise((resolve, reject) => {
+    //         const pub = dispatcher.pub('a')
+    //         const mapped = dispatcher.reactivePromise(pub)('a', (s) => Promise.resolve(s + 'b'))
+    //         mapped.on('update', e => {
+    //             resolve(mapped.value === 'bb')
+    //         })
+    //         pub.value = 'b'
 
-            setTimeout(() => reject(), 1000)
-        })),
+    //         setTimeout(() => reject(), 1000)
+    //     })),
     test('mutable pub')
         .expectsSuccess(() => {
             const pub = dispatcher.pub([])            

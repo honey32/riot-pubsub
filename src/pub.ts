@@ -63,37 +63,6 @@ export class ObservableMapped<V> extends Observable<V> {
     }
 }
 
-export class ObservableMappedPromise<V> extends Observable<V> {
-    private _value: V
-
-    constructor(dispatcher: ObservableDispatcher, private dependencies: Observable<any>[], initial: V, private fn: (...args: any[]) => Promise<V>) {
-        super(dispatcher)
-        this._value = initial
-        fn(...dependencies.map(obs => obs.value)).then(value => {
-            this._value = value
-        })
-        this.dispatcher.onAnyUpdate(dependencies, () => {
-            const oldValue = this._value
-            fn(...dependencies.map(obs => obs.value)).then(newValue => {
-                this._value = newValue
-                this.trigger({ type: 'update', newValue, isReassigned: true, oldValue })
-            })
-        })
-    }
-
-    get value(): V {
-        return this._value
-    }
-
-    sync(): void {
-        const oldValue = this._value
-        this.fn(...this.dependencies.map(obs => obs.value)).then(newValue => {
-            this._value = newValue
-            this.trigger({ type: 'update', newValue, isReassigned: true, oldValue })
-        })
-    }
-}
-
 export class Pub<V> extends Observable<V> {
     protected _value: V
 
