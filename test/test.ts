@@ -1,4 +1,4 @@
-import { Pub, PubWithProps, Mixin, ObservableDispatcher, Observable } from '../dist/index.js'
+import { Pub, PubWithProps, Mixin, ObservableDispatcher, Observable } from '../src/index.js'
 
 import { testAll, test, assert } from './util'
 
@@ -53,7 +53,8 @@ testAll(
     test('reactive')
         .expectsSuccess(() => {
             const pub = dispatcher.pub('a')
-            const mapped = dispatcher.reactive([pub], (value) => value + 'b')
+            const pub2 = dispatcher.pub(1)
+            const mapped = dispatcher.reactive(pub, pub2)((value, value2) => value + 'b')
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
@@ -61,7 +62,7 @@ testAll(
     test('reactivePromise')
         .promisesTruth(() => new Promise((resolve, reject) => {
             const pub = dispatcher.pub('a')
-            const mapped = dispatcher.reactive([pub], (s) => s + 'b')
+            const mapped = dispatcher.reactivePromise(pub)('a', (s) => Promise.resolve(s + 'b'))
             mapped.on('update', newValue => {
                 resolve(mapped.value === 'bb')
             })
