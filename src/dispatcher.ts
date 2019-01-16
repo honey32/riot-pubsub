@@ -13,6 +13,8 @@ export interface UpdateEvent<V> {
 type ObservableValue<T> = T extends Observable<infer V> ? V : never
 type ObservableValueTuple<D> = {[P in keyof D]: ObservableValue<D[P]>}
 
+type SubscribingAction<V, T> = (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void
+
 export class ObservableDispatcher {
     private observable: any
     updateListeners: Listener<any>[] = []
@@ -72,7 +74,7 @@ export class ObservableDispatcher {
             new ObservableMapped(this, dependencies, fn)
     }
     
-    subscribing<V, T>(target: Observable<T>, initial: V, action: (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void) {
+    subscribing<V, T>(target: Observable<T>, initial: V, action: SubscribingAction<V, T>) {
         return new ObservableSubscribing(this, target, initial, action)
     }
 }
