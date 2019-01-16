@@ -1,4 +1,4 @@
-import { ObservableDispatcher, Listener, UpdateEvent } from "./dispatcher";
+import { ObservableDispatcher, Listener, UpdateEvent, ObservableValueUnion } from "./dispatcher";
 
 export abstract class Observable<V> {
     readonly value: V
@@ -18,39 +18,29 @@ export abstract class Observable<V> {
     }
 }
 
-export class ObservableSubscribing<V, T> extends Observable<V> {
-    _value: V
-
-    constructor(public dispatcher: ObservableDispatcher, 
-            private target: Observable<T>, 
-            initial: V, 
-            private action: (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void) {
+export abstract class ObservableSubscribing<V, D extends Observable<any>[]> extends Observable<V> {
+    constructor(dispatcher: ObservableDispatcher, ...target: D) {
         super(dispatcher)
-        this.value = initial
-        this.target.on('update', (e) => this.action(this, e))
+        this.dispatcher.onAnyUpdate(target, (e) => this.action(e))
     }
 
-    get value() {
-        return this._value
-    }
-
-    set value(newValue: V) {
-        this._value = newValue
-        this.trigger({ type: 'update', newValue, isReassigned: true })
-    }
+    abstract action(event: UpdateEvent<ObservableValueUnion<D>>): void
 }
 
-export class ObservableMapped<V> extends Observable<V> {
+
+
+export class ObservableMapped<V, D extends Observable<any>[]> extends ObservableSubscribing<V, D> {
     private _value: V
 
-    constructor(dispatcher: ObservableDispatcher, private dependencies: Observable<any>[], private fn: (...args: any[]) => V) {
-        super(dispatcher)
+    constructor(dispatcher: ObservableDispatcher, private dependencies: D, private fn: (...args: any[]) => V) {
+        super(dispatcher, ...dependencies)
         this._value = fn(...dependencies.map(obs => obs.value))
-        this.dispatcher.onAnyUpdate(dependencies, () => {
-            const oldValue = this._value
-            this._value = fn(...dependencies.map(obs => obs.value))
-            this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue } )
-        })
+    }
+
+    action(event: UpdateEvent<keyof D>): void {
+        const oldValue = this._value
+        this._value = this.fn(...this.dependencies.map(obs => obs.value))
+        this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue } )
     }
 
     get value(): V {
@@ -93,55 +83,6 @@ export class Pub<V> extends Observable<V> {
     }
 }
 
-export class PubWithProps<V> extends Pub<V> {
-    constructor(dispatcher: ObservableDispatcher, value: V) { 
-        super(dispatcher, value, false)
-    }
-
-    createProperty<A>(valueProvider: (value: V) => Pub<A>, mutable?: boolean) {
-        return new NestedProperty<V, A>(this, valueProvider)
-    }
-}
-
-export class NestedProperty<P, V> extends Observable<V> {
-    private _value: V
-
-    get value() { return this._value }
-
-    constructor(parent: PubWithProps<P>, provider: (parentValue: P) => Observable<V>) {
-        super(parent.dispatcher)
-
-        function safeValue(p?: P): V {
-            if (!p) { return null }
-            if (!provider(p)) { return null }
-            return provider(p).value
-        }
-
-        this._value = safeValue(parent.value)
-
-        const listener = (_: never, event: UpdateEvent<V>) => {
-            this._value = event.newValue
-            this.trigger(event)
-        }
-
-        if (parent.value) {
-            provider(parent.value).on('update', listener.bind(undefined, null))
-        }
-        
-        parent.on('update', ({newValue, isReassigned, oldValue}) => {
-            if (isReassigned) {
-                if (oldValue) {
-                    provider(oldValue).off('update', listener)
-                }
-
-                this._value = safeValue(newValue)
-                if (newValue) {
-                    provider(newValue).on('update', listener.bind(undefined, null))
-                }
-            }
-        })
-    }
-}
 
 export class PubContributable<V> extends Pub<V> {
     contribute(newValue: V): void {

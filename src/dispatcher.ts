@@ -12,8 +12,11 @@ export interface UpdateEvent<V> {
 
 type ObservableValue<T> = T extends Observable<infer V> ? V : never
 type ObservableValueTuple<D> = {[P in keyof D]: ObservableValue<D[P]>}
+export type ObservableValueUnion<D> = keyof ObservableValueTuple<D>
 
-type SubscribingAction<V, T> = (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void
+type SubscribingCtor<V, O extends ObservableSubscribing<V, D>, D extends Observable<any>[]> = {
+    new (dispatcher: ObservableDispatcher, ...target: D): O
+}
 
 export class ObservableDispatcher {
     private observable: any
@@ -68,13 +71,9 @@ export class ObservableDispatcher {
     contributable<V>(value: V, isMutable: boolean = true) {
         return new PubContributable(this, value, isMutable)
     }
-
-    reactive<D extends Observable<any>[]>(...dependencies: D) {
-        return <V>(fn: (...values: ObservableValueTuple<D>) => V) => 
-            new ObservableMapped(this, dependencies, fn)
-    }
     
-    subscribing<V, T>(target: Observable<T>, initial: V, action: SubscribingAction<V, T>) {
-        return new ObservableSubscribing(this, target, initial, action)
+    subscribing<V, O extends ObservableSubscribing<V, D>, D extends Observable<any>[]>
+            (ctor: SubscribingCtor<V, O, D>, ...target: D) { 
+        return new ctor(this, ...target)
     }
 }
