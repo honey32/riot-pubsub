@@ -1,4 +1,4 @@
-import { Pub, Observable } from './pub'
+import { Observable } from './pub'
 
 export class Mixin {
     constructor (public action: (_this: any) => any) {}

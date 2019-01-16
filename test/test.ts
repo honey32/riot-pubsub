@@ -1,4 +1,4 @@
-import { Pub, PubWithProps, Mixin, ObservableDispatcher, Observable } from '../src/index'
+import { Pub, PubWithProps, Mixin, ObservableDispatcher } from '../src/index'
 
 import { testAll, test, assert } from './util'
 
