@@ -1,5 +1,4 @@
 import { ObservableDispatcher, Listener, UpdateEvent } from "./dispatcher";
-import { on } from "cluster";
 
 export abstract class Observable<V> {
     readonly value: V
