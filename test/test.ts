@@ -20,15 +20,15 @@ testAll(
     test<Pub<string>>('event fired correctly')
         .for(dispatcher.pub('a'))
         .promisesTruth(pub => new Promise((resolve, reject) => {
-            pub.on('update', (newValue) => resolve(newValue === 'b'))
-            pub.trigger('update', 'b', true)
+            pub.on('update', ({newValue}) => resolve(newValue === 'b'))
+            pub.trigger({ type: 'update', newValue: 'b', isReassigned: true })
         })),
     test<[Pub<string>, Pub<string>, string, string]>('onAnyUpdate works')
         .for([dispatcher.pub('a'), dispatcher.pub('b'), 'pubA', 'A'])
         .promisesTruth(set =>
             new Promise((resolve, reject) => {
                 const [a, b, changeName, changeValue] = set
-                dispatcher.onAnyUpdate([a, b], (name, newValue) => 
+                dispatcher.onAnyUpdate([a, b], (e) => 
                     resolve(true)
                 )
                 a.value = changeValue
@@ -63,7 +63,7 @@ testAll(
         .promisesTruth(() => new Promise((resolve, reject) => {
             const pub = dispatcher.pub('a')
             const mapped = dispatcher.reactivePromise(pub)('a', (s) => Promise.resolve(s + 'b'))
-            mapped.on('update', newValue => {
+            mapped.on('update', e => {
                 resolve(mapped.value === 'bb')
             })
             pub.value = 'b'

@@ -1,7 +1,14 @@
 import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
 
-export type Listener<A> = (obj: Observable<A>, newValue: A, isReassign: boolean, oldValue?: A) => void
+export type Listener<A> = (obj: Observable<A>, event: UpdateEvent<A>) => void
 export type EventArgs<A> = [A, boolean, A]
+
+export interface UpdateEvent<V> {
+    type: 'update' | 'contribute'
+    newValue: V
+    isReassigned: boolean
+    oldValue?: V
+}
 
 type ObservableValue<T> = T extends Observable<infer V> ? V : never
 type ObservableValueTuple<D> = {[P in keyof D]: ObservableValue<D[P]>}
@@ -13,14 +20,11 @@ export class ObservableDispatcher {
 
     trigger<V>(
         object: Observable<V>,
-        event: 'update' | 'contribute',
-        newValue: V,
-        isReassign: boolean,
-        oldValue?: V
+        event: UpdateEvent<V>
     ) {
-        const listeners = event === 'update' ? this.updateListeners: this.contributeListeners
+        const listeners = event.type === 'update' ? this.updateListeners: this.contributeListeners
         for (const listener of listeners) {
-            listener(object, newValue, isReassign, oldValue)
+            listener(object, event)
         }
     }
 
@@ -28,15 +32,13 @@ export class ObservableDispatcher {
         object: Observable<V>,
         event: 'update' | 'contribute',
         fn: (
-            newValue: V,
-            isReassign: boolean,
-            oldValue?: V
+            event: UpdateEvent<V>
         ) => any
     ): Listener<V> {
         const listeners = event === 'update' ? this.updateListeners: this.contributeListeners
-        const listener: Listener<V> = (obj, newValue, isReassign, oldValue) => {
+        const listener: Listener<V> = (obj, event) => {
             if (obj === object) {    
-                fn(newValue, isReassign, oldValue)
+                fn(event)
             }
         }
         
@@ -57,12 +59,12 @@ export class ObservableDispatcher {
 
     onAnyUpdate(
         objects: Observable<any>[],
-        fn: (obj: Observable<any>, newValue: any, isReassign: boolean, oldValue?: any) => any
+        fn: (event: UpdateEvent<any>) => any
     ): Listener<any> {
-        const listener: Listener<any> = (obj, newValue, isReassign, oldValue) => {
+        const listener: Listener<any> = (obj, event) => {
             const found = objects.find((e) => obj === e)
             if (found) {    
-                fn(obj, newValue, isReassign, oldValue)
+                fn(event)
             }
         }
         

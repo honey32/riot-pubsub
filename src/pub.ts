@@ -1,17 +1,16 @@
-import { ObservableDispatcher, Listener } from "./dispatcher";
+import { ObservableDispatcher, Listener, UpdateEvent } from "./dispatcher";
 
 export abstract class Observable<V> {
     readonly value: V
 
     constructor (public dispatcher: ObservableDispatcher) {}
 
-    trigger(event: 'update' | 'contribute', newValue: V, isReassigned: boolean, oldValue?: V) {
-        this.dispatcher.trigger(this, event, newValue, isReassigned, oldValue)
+    trigger(event: UpdateEvent<V>) {
+        this.dispatcher.trigger(this, event)
     }
 
-    on(event: 'update' | 'contribute', fn: (newValue: V, isReassigned: boolean, oldValue?: V) => any): ((newValue: V, isReassigned: boolean, oldValue?: V) => any) {
-        this.dispatcher.on(this, event, fn)
-        return fn
+    on(event: 'update' | 'contribute', fn: (event: UpdateEvent<V>) => any): Listener<V> {
+        return this.dispatcher.on(this, event, fn)
     }
 
     off(event: 'update' | 'contribute', fn: Listener<V>) {
@@ -28,7 +27,7 @@ export class ObservableMapped<V> extends Observable<V> {
         this.dispatcher.onAnyUpdate(dependencies, () => {
             const oldValue = this._value
             this._value = fn(...dependencies.map(obs => obs.value))
-            this.trigger('update', this._value, true, oldValue)
+            this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue } )
         })
     }
 
@@ -39,7 +38,7 @@ export class ObservableMapped<V> extends Observable<V> {
     sync(): void {
         const oldValue = this._value
         this._value = this.fn(...this.dependencies.map(obs => obs.value))
-        this.trigger('update', this._value, true, oldValue)
+        this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue})
     }
 }
 
@@ -54,9 +53,9 @@ export class ObservableMappedPromise<V> extends Observable<V> {
         })
         this.dispatcher.onAnyUpdate(dependencies, () => {
             const oldValue = this._value
-            fn(...dependencies.map(obs => obs.value)).then(value => {
-                this._value = value
-                this.trigger('update', value, true, oldValue)
+            fn(...dependencies.map(obs => obs.value)).then(newValue => {
+                this._value = newValue
+                this.trigger({ type: 'update', newValue, isReassigned: true, oldValue })
             })
         })
     }
@@ -67,9 +66,9 @@ export class ObservableMappedPromise<V> extends Observable<V> {
 
     sync(): void {
         const oldValue = this._value
-        this.fn(...this.dependencies.map(obs => obs.value)).then(value => {
-            this._value = value
-            this.trigger('update', value, true, oldValue)
+        this.fn(...this.dependencies.map(obs => obs.value)).then(newValue => {
+            this._value = newValue
+            this.trigger({ type: 'update', newValue, isReassigned: true, oldValue })
         })
     }
 }
@@ -94,12 +93,12 @@ export class Pub<V> extends Observable<V> {
         }
 
         this._value = newValue
-        this.trigger('update', newValue, true, oldValue)
+        this.trigger({ type: 'update', newValue, isReassigned: true, oldValue })
     }
 
     mutate(fn: (value: V) => any): void {
         fn(this.value)
-        this.trigger('update', this.value, false)
+        this.trigger({ type: 'update', newValue: this.value, isReassigned: false })
     }
 }
 
@@ -129,16 +128,16 @@ export class NestedProperty<P, V> extends Observable<V> {
 
         this._value = safeValue(parent.value)
 
-        const listener = (newValue, isReassigned, oldValue) => {
-            this._value = newValue
-            this.trigger('update', newValue, isReassigned, oldValue)
+        const listener = (_: never, event: UpdateEvent<V>) => {
+            this._value = event.newValue
+            this.trigger(event)
         }
 
         if (parent.value) {
-            provider(parent.value).on('update', listener)
+            provider(parent.value).on('update', listener.bind(undefined, null))
         }
         
-        parent.on('update', (newValue, isReassigned, oldValue) => {
+        parent.on('update', ({newValue, isReassigned, oldValue}) => {
             if (isReassigned) {
                 if (oldValue) {
                     provider(oldValue).off('update', listener)
@@ -146,7 +145,7 @@ export class NestedProperty<P, V> extends Observable<V> {
 
                 this._value = safeValue(newValue)
                 if (newValue) {
-                    provider(newValue).on('update', listener)
+                    provider(newValue).on('update', listener.bind(undefined, null))
                 }
             }
         })
@@ -162,11 +161,11 @@ export class PubContributable<V> extends Pub<V> {
         }
         
         this._value = newValue
-        this.trigger('contribute', newValue, true, oldValue)
+        this.trigger({ type: 'contribute', newValue, isReassigned: true, oldValue })
     }
 
     contributeMutation(fn: (value: V) => any): void {
         fn(this.value)
-        this.trigger('contribute', this.value, false)
+        this.trigger({ type: 'contribute', newValue: this.value, isReassigned: false })
     }
 }
