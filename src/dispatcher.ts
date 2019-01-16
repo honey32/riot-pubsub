@@ -1,4 +1,4 @@
-import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub'
+import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable, ObservableSubscribing } from './pub'
 
 export type Listener<A> = (obj: Observable<A>, event: UpdateEvent<A>) => void
 export type EventArgs<A> = [A, boolean, A]
@@ -73,5 +73,9 @@ export class ObservableDispatcher {
     reactivePromise<V, D extends Observable<any>[]>(...dependencies: D) {
         return (initial: V, fn: (...values: ObservableValueTuple<D>) => Promise<V>) => 
             new ObservableMappedPromise(this, dependencies, initial, fn)
+    }
+
+    subscribing<V, T>(target: Observable<T>, initial: V, action: (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void) {
+        return new ObservableSubscribing(this, target, initial, action)
     }
 }

@@ -1,4 +1,5 @@
 import { ObservableDispatcher, Listener, UpdateEvent } from "./dispatcher";
+import { on } from "cluster";
 
 export abstract class Observable<V> {
     readonly value: V
@@ -15,6 +16,27 @@ export abstract class Observable<V> {
 
     off(event: 'update' | 'contribute', fn: Listener<V>) {
         this.dispatcher.off(event, fn)
+    }
+}
+
+export class ObservableSubscribing<V, T> extends Observable<V> {
+    _value: V
+
+    constructor(public dispatcher: ObservableDispatcher, 
+            private target: Observable<T>, 
+            initial: V, 
+            private action: (self: ObservableSubscribing<V, T>, event: UpdateEvent<T>) => void) {
+        super(dispatcher)
+        this.value = initial
+    }
+
+    get value() {
+        return this._value
+    }
+
+    set value(v: V) {
+        this._value = v
+        this.target.on('update', (e) => this.action(this, e))
     }
 }
 
