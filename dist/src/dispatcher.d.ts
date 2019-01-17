@@ -1,21 +1,20 @@
-import { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubContributable } from './pub';
-export declare type Listener<A> = (obj: Observable<A>, newValue: A, isReassign: boolean, oldValue?: A) => void;
-export declare type EventArgs<A> = [A, boolean, A];
-declare type ObservableValue<T> = T extends Observable<infer V> ? V : never;
-declare type ObservableValueTuple<D> = {
-    [P in keyof D]: ObservableValue<D[P]>;
-};
+import { Observable, Pub, PubContributable, ObservableSubscribing } from './pub';
+export declare type Listener<A> = (obj: Observable<A>, event: UpdateEvent<A>) => void;
+export interface UpdateEvent<V> {
+    type: 'update' | 'contribute';
+    newValue: V;
+    isReassigned: boolean;
+    oldValue?: V;
+}
 export declare class ObservableDispatcher {
     private observable;
     updateListeners: Listener<any>[];
     contributeListeners: Listener<any>[];
-    trigger<V>(object: Observable<V>, event: 'update' | 'contribute', newValue: V, isReassign: boolean, oldValue?: V): void;
-    on<V>(object: Observable<V>, event: 'update' | 'contribute', fn: (newValue: V, isReassign: boolean, oldValue?: V) => any): Listener<V>;
+    trigger<V>(object: Observable<V>, event: UpdateEvent<V>): void;
+    on<V>(object: Observable<V>, event: 'update' | 'contribute', fn: (event: UpdateEvent<V>) => any): Listener<V>;
     off(event: 'update' | 'contribute', fn: Listener<any>): void;
-    onAnyUpdate(objects: Observable<any>[], fn: (obj: Observable<any>, newValue: any, isReassign: boolean, oldValue?: any) => any): Listener<any>;
-    pub<V>(value: V, isMutable?: boolean): Pub<V>;
-    contributable<V>(value: V, isMutable?: boolean): PubContributable<V>;
-    reactive<V, D extends Observable<any>[]>(...dependencies: D): (fn: (...values: ObservableValueTuple<D>) => V) => ObservableMapped<V>;
-    reactivePromise<V, D extends Observable<any>[]>(...dependencies: D): (initial: V, fn: (...values: ObservableValueTuple<D>) => Promise<V>) => ObservableMappedPromise<V>;
+    onAnyUpdate(objects: Observable<any>[], fn: (event: UpdateEvent<any>) => any): Listener<any>;
+    create<V>(value: V): Pub<V>;
+    create<V>(value: V, cont: 'contributable'): PubContributable<V>;
+    subscribing<D extends Observable<any>[]>(...dependencies: D): <V, R extends ObservableSubscribing<V, D>>(fn: ObservableSubscribing.Provider<V, D, R>) => R;
 }
-export {};

@@ -2,70 +2,62 @@ class Observable {
     constructor(dispatcher) {
         this.dispatcher = dispatcher;
     }
-    trigger(event, newValue, isReassigned, oldValue) {
-        this.dispatcher.trigger(this, event, newValue, isReassigned, oldValue);
+    trigger(event) {
+        this.dispatcher.trigger(this, event);
     }
     on(event, fn) {
-        this.dispatcher.on(this, event, fn);
-        return fn;
+        return this.dispatcher.on(this, event, fn);
     }
     off(event, fn) {
         this.dispatcher.off(event, fn);
     }
 }
-class ObservableMapped extends Observable {
-    constructor(dispatcher, dependencies, fn) {
+class ObservableSubscribing extends Observable {
+    constructor(dispatcher, target) {
         super(dispatcher);
-        this.dependencies = dependencies;
-        this.fn = fn;
-        this._value = fn(...dependencies.map(obs => obs.value));
-        this.dispatcher.onAnyUpdate(dependencies, () => {
-            const oldValue = this._value;
-            this._value = fn(...dependencies.map(obs => obs.value));
-            this.trigger('update', this._value, true, oldValue);
-        });
+        this.dependencies = target;
+        this.dispatcher.onAnyUpdate(target, (e) => this.action(e));
     }
     get value() {
         return this._value;
+    }
+    updateValue(newValue) {
+        const oldValue = this._value;
+        this._value = newValue;
+        this.trigger({ type: 'update', newValue, isReassigned: true, oldValue });
+    }
+}
+class ObservableMapped extends ObservableSubscribing {
+    constructor(dispatcher, _dependencies, fn) {
+        super(dispatcher, _dependencies);
+        this.fn = fn;
+        this._value = fn(...this.dependencies.map(obs => obs.value));
+    }
+    static create(fn) {
+        return (dispatcher, ...d) => new ObservableMapped(dispatcher, d, fn);
+    }
+    action(event) {
+        this.updateValue(this.fn(...this.dependencies.map(obs => obs.value)));
     }
     sync() {
         const oldValue = this._value;
         this._value = this.fn(...this.dependencies.map(obs => obs.value));
-        this.trigger('update', this._value, true, oldValue);
+        this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue });
     }
 }
-class ObservableMappedPromise extends Observable {
-    constructor(dispatcher, dependencies, initial, fn) {
-        super(dispatcher);
-        this.dependencies = dependencies;
-        this.fn = fn;
-        this._value = initial;
-        fn(...dependencies.map(obs => obs.value)).then(value => {
-            this._value = value;
-        });
-        this.dispatcher.onAnyUpdate(dependencies, () => {
-            const oldValue = this._value;
-            fn(...dependencies.map(obs => obs.value)).then(value => {
-                this._value = value;
-                this.trigger('update', value, true, oldValue);
-            });
-        });
+class ObservablePromise extends ObservableSubscribing {
+    static create() {
+        return (dispacher, d) => new ObservablePromise(dispacher, [d]);
     }
-    get value() {
-        return this._value;
-    }
-    sync() {
-        const oldValue = this._value;
-        this.fn(...this.dependencies.map(obs => obs.value)).then(value => {
-            this._value = value;
-            this.trigger('update', value, true, oldValue);
+    action(event) {
+        event.newValue.then(newValue => {
+            this.updateValue(newValue);
         });
     }
 }
 class Pub extends Observable {
-    constructor(dispatcher, value, isMutable = true) {
+    constructor(dispatcher, value) {
         super(dispatcher);
-        this.isMutable = isMutable;
         this._value = value;
     }
     get value() {
@@ -73,71 +65,29 @@ class Pub extends Observable {
     }
     set value(newValue) {
         const oldValue = this._value;
-        if (!this.isMutable && newValue === oldValue) {
+        if (newValue === oldValue) {
             return;
         }
         this._value = newValue;
-        this.trigger('update', newValue, true, oldValue);
+        this.trigger({ type: 'update', newValue, isReassigned: true, oldValue });
     }
     mutate(fn) {
         fn(this.value);
-        this.trigger('update', this.value, false);
+        this.trigger({ type: 'update', newValue: this.value, isReassigned: false });
     }
-}
-class PubWithProps extends Pub {
-    constructor(dispatcher, value) {
-        super(dispatcher, value, false);
-    }
-    createProperty(valueProvider, mutable) {
-        return new NestedProperty(this, valueProvider);
-    }
-}
-class NestedProperty extends Observable {
-    constructor(parent, provider) {
-        super(parent.dispatcher);
-        function safeValue(p) {
-            if (!p) {
-                return null;
-            }
-            if (!provider(p)) {
-                return null;
-            }
-            return provider(p).value;
-        }
-        this._value = safeValue(parent.value);
-        const listener = (newValue, isReassigned, oldValue) => {
-            this._value = newValue;
-            this.trigger('update', newValue, isReassigned, oldValue);
-        };
-        if (parent.value) {
-            provider(parent.value).on('update', listener);
-        }
-        parent.on('update', (newValue, isReassigned, oldValue) => {
-            if (isReassigned) {
-                if (oldValue) {
-                    provider(oldValue).off('update', listener);
-                }
-                this._value = safeValue(newValue);
-                if (newValue) {
-                    provider(newValue).on('update', listener);
-                }
-            }
-        });
-    }
-    get value() { return this._value; }
 }
 class PubContributable extends Pub {
     contribute(newValue) {
         const oldValue = this._value;
-        if (!this.isMutable && newValue === oldValue) {
+        if (newValue === oldValue) {
             return;
         }
         this._value = newValue;
-        this.trigger('contribute', newValue, true, oldValue);
+        this.trigger({ type: 'contribute', newValue, isReassigned: true, oldValue });
     }
     contributeMutation(fn) {
         fn(this.value);
-        this.trigger('contribute', this.value, false);
+        this.trigger({ type: 'contribute', newValue: this.value, isReassigned: false });
     }
 }
 
@@ -175,17 +125,17 @@ class ObservableDispatcher {
         this.updateListeners = [];
         this.contributeListeners = [];
     }
-    trigger(object, event, newValue, isReassign, oldValue) {
-        const listeners = event === 'update' ? this.updateListeners : this.contributeListeners;
+    trigger(object, event) {
+        const listeners = event.type === 'update' ? this.updateListeners : this.contributeListeners;
         for (const listener of listeners) {
-            listener(object, newValue, isReassign, oldValue);
+            listener(object, event);
         }
     }
     on(object, event, fn) {
         const listeners = event === 'update' ? this.updateListeners : this.contributeListeners;
-        const listener = (obj, newValue, isReassign, oldValue) => {
+        const listener = (obj, event) => {
             if (obj === object) {
-                fn(newValue, isReassign, oldValue);
+                fn(event);
             }
         };
         listeners.push(listener);
@@ -199,33 +149,21 @@ class ObservableDispatcher {
         }
     }
     onAnyUpdate(objects, fn) {
-        const listener = (obj, newValue, isReassign, oldValue) => {
+        const listener = (obj, event) => {
             const found = objects.find((e) => obj === e);
             if (found) {
-                fn(obj, newValue, isReassign, oldValue);
+                fn(event);
             }
         };
         this.updateListeners.push(listener);
         return listener;
     }
-    pub(value, isMutable = true) {
-        return new Pub(this, value, isMutable);
+    create(value, cont) {
+        return cont === 'contributable' ? new PubContributable(this, value) : new Pub(this, value);
     }
-    contributable(value, isMutable = true) {
-        return new PubContributable(this, value, isMutable);
-    }
-    // reactive<A1, A2, A3, V>(dependencies: [Observable<A1>, Observable<A2>, Observable<A3>], fn: (v1: A1, v2: A2, v3: A3) => V): ObservableMapped<V>
-    // reactive<A1, A2, V>(dependencies: [Observable<A1>, Observable<A2>], fn: (v1: A1, v2: A2) => V): ObservableMapped<V>
-    // reactive<A1, V>(dependencies: [Observable<A1>], fn: (v1: A1) => V): ObservableMapped<V>
-    reactive(...dependencies) {
-        return (fn) => new ObservableMapped(this, dependencies, fn);
-    }
-    // reactivePromise<A1, A2, A3, V>(dependencies: [Observable<A1>, Observable<A2>, Observable<A3>], initial: V, fn: (v1: A1, v2: A2, v3: A3) => V) : ObservableMappedPromise<V>
-    // reactivePromise<A1, A2, V>(dependencies: [Observable<A1>, Observable<A2>], initial: V, fn: (v1: A1, v2: A2) => V) : ObservableMappedPromise<V>
-    // reactivePromise<A1, V>(dependencies: [Observable<A1>], initial: V, fn: (v1: A1) => V) : ObservableMappedPromise<V>
-    reactivePromise(...dependencies) {
-        return (initial, fn) => new ObservableMappedPromise(this, dependencies, initial, fn);
+    subscribing(...dependencies) {
+        return (fn) => fn(this, ...dependencies);
     }
 }
 
-export { Observable, ObservableMapped, ObservableMappedPromise, Pub, PubWithProps, NestedProperty, PubContributable, Mixin, ObservableDispatcher };
+export { Observable, ObservableSubscribing, ObservableMapped, ObservablePromise, Pub, PubContributable, Mixin, ObservableDispatcher };
