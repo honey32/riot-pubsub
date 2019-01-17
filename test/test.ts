@@ -1,4 +1,4 @@
-import { Pub, Mixin, ObservableDispatcher, ObservableMapped, PubContributable } from '../src/index'
+import { Pub, Mixin, ObservableDispatcher, ObservableMapped, PubContributable, ObservablePromise } from '../src/index'
 
 import { testAll, test, assert } from './util'
 
@@ -62,25 +62,18 @@ testAll(
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
         }),
-    // test('subscribe')
-    //     .promisesTruth(() => new Promise((resolve, reject) => {
-    //         const pub = dispatcher.pub('a')
-            // const mapped = dispatcher.subscribing()
-            // const mapped = dispatcher.subscribing(
-            //     dispatcher.reactive(pub)((s) => Promise.resolve(s + 'b')),
-            //     'aa',
-            //     async (self, event) => {
-            //         self.value = await event.newValue
-            //     }
-            // )
+    test('promise')
+        .promisesTruth(() => new Promise((resolve, reject) => {
+            const pub = dispatcher.create(Promise.resolve('a'))
+            const mapped = dispatcher.subscribing(pub)(ObservablePromise.create())
 
-        //     mapped.on('update', e => {
-        //         resolve(mapped.value === 'bb')
-        //     })
-        //     pub.value = 'b'
+            mapped.on('update', e => {
+                resolve(mapped.value === 'b')
+            })
+            pub.value = Promise.resolve('b')
 
-        //     setTimeout(() => reject(), 1000)
-        // })),
+            setTimeout(() => reject(), 1000)
+        })),
     test('mutable pub')
         .expectsSuccess(() => {
             const pub = dispatcher.create([])            
