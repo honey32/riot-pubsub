@@ -1,5 +1,4 @@
 import { Observable, Pub, PubContributable, ObservableSubscribing } from './pub'
-import { SubscribingProvider } from './types';
 
 export type Listener<A> = (obj: Observable<A>, event: UpdateEvent<A>) => void
 
@@ -62,6 +61,6 @@ export class ObservableDispatcher {
 
     subscribing<D extends Observable<any>[]>(...dependencies: D) {
         return <V, R extends ObservableSubscribing<V, D>>
-            (fn: SubscribingProvider<V, D, R>) => fn(this, ...dependencies)
+            (fn: ObservableSubscribing.Provider<V, D, R>) => fn(this, ...dependencies)
     }
 }

@@ -1,5 +1,5 @@
 import { ObservableDispatcher, Listener, UpdateEvent} from "./dispatcher";
-import { ObservableValueUnion, ObservableValueTuple, SubscribingProvider } from "./types";
+import { ObservableValueUnion, ObservableValueTuple } from "./types";
 
 export abstract class Observable<V> {
     readonly value: V
@@ -42,6 +42,11 @@ export abstract class ObservableSubscribing<V, D extends Observable<any>[]> exte
     abstract action(event: UpdateEvent<ObservableValueUnion<D>>): void
 }
 
+export namespace ObservableSubscribing {
+    export type Provider<V, D extends any[], R extends ObservableSubscribing<V, D>>
+        = (dispatcher: ObservableDispatcher, ...dependencies: D) => R
+}
+
 export class ObservableMapped<V, D extends Observable<any>[]> extends ObservableSubscribing<V, D> {
     constructor(dispatcher: ObservableDispatcher, _dependencies: D, private fn: (...args: ObservableValueTuple<D>) => V) {
         super(dispatcher, _dependencies)
@@ -51,7 +56,7 @@ export class ObservableMapped<V, D extends Observable<any>[]> extends Observable
     
     static create<V, D extends Observable<any>[]>(
             fn: (...args: ObservableValueTuple<D>) => V)
-    : SubscribingProvider<V, D, ObservableMapped<V, D>> {
+    : ObservableSubscribing.Provider<V, D, ObservableMapped<V, D>> {
         return (dispatcher: ObservableDispatcher, ...d: D) => new ObservableMapped<V, D>(dispatcher, d, fn)
     }
 
@@ -67,7 +72,7 @@ export class ObservableMapped<V, D extends Observable<any>[]> extends Observable
 }
 
 export class ObservablePromise<V, O extends Observable<Promise<V>>> extends ObservableSubscribing<V, [O]> {
-    static create<V, O extends Observable<Promise<V>>>(): SubscribingProvider<V, [O], ObservablePromise<V, O>> {
+    static create<V, O extends Observable<Promise<V>>>(): ObservableSubscribing.Provider<V, [O], ObservablePromise<V, O>> {
         return (dispacher: ObservableDispatcher, d: O) => new ObservablePromise(dispacher, [d])
     }
 
