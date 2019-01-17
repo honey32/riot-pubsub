@@ -1,30 +1,33 @@
-import { Pub, PubWithProps, Mixin, ObservableDispatcher } from '../src/index'
+import { Pub, Mixin, ObservableDispatcher, ObservableMapped, PubContributable } from '../src/index'
 
 import { testAll, test, assert } from './util'
 
 const dispatcher = new ObservableDispatcher()
 
 testAll(
-    test<boolean>('factory method works')
-        .for(true)
-        .expectsSuccess(isMutable => {
-            const pub = dispatcher.pub(0, isMutable)
-            assert.eq(pub.isMutable, isMutable)
+    test('factory method works')
+        .expectsSuccess(() => {
+            const pub = dispatcher.create(0)
+            if(pub['contribute']) {
+                throw 'Happeningly Contributable'
+            }
+            const pub2 = dispatcher.create(0, 'contributable')
+            pub2.contribute(1)
         }),
     test<Pub<string>>('Pub#value property works')
-        .for(dispatcher.pub('a'), dispatcher.pub('b'))
+        .for(dispatcher.create('a'), dispatcher.create('b'))
         .expectsSuccess(pub => {
             pub.value = 'b'
             assert.eq(pub.value, 'b')
         }),
     test<Pub<string>>('event fired correctly')
-        .for(dispatcher.pub('a'))
+        .for(dispatcher.create('a'))
         .promisesTruth(pub => new Promise((resolve, reject) => {
             pub.on('update', ({newValue}) => resolve(newValue === 'b'))
             pub.trigger({ type: 'update', newValue: 'b', isReassigned: true })
         })),
     test<[Pub<string>, Pub<string>, string, string]>('onAnyUpdate works')
-        .for([dispatcher.pub('a'), dispatcher.pub('b'), 'pubA', 'A'])
+        .for([dispatcher.create('a'), dispatcher.create('b'), 'pubA', 'A'])
         .promisesTruth(set =>
             new Promise((resolve, reject) => {
                 const [a, b, changeName, changeValue] = set
@@ -35,8 +38,8 @@ testAll(
                 setTimeout(() => reject(), 1000)
             })
         ),
-    test<Pub<string>>('Immutable Pub prevents update correctly')
-        .for(dispatcher.pub('a', false), dispatcher.contributable('a', false))
+    test<Pub<string>>('prevents update if no change')
+        .for(dispatcher.create('a'), dispatcher.create('a', 'contributable'))
         .promisesTruth(pub => 
             new Promise((resolve, reject) => {
                 pub.on('update', () => reject('update'))
@@ -44,42 +47,43 @@ testAll(
                 setTimeout(() => resolve(true), 1000)
             })  
         ),
-    test<Pub<string>>('Immutable Pub prevent contribution')
-        .for(dispatcher.contributable('a', false))
+    test<Pub<string>>('Pub prevent contribution if no change')
+        .for(dispatcher.create('a', 'contributable'))
         .promisesTruth(pub => new Promise((resolve, reject) => {
             pub.on('contribute', () => reject('contribute'))
             setTimeout(() => resolve(true), 1000)
         })),
     test('reactive')
         .expectsSuccess(() => {
-            const pub = dispatcher.pub('a')
-            const pub2 = dispatcher.pub(1)
-            const mapped = dispatcher.reactive(pub, pub2)((value, value2) => value + 'b')
+            const pub = dispatcher.create('a')
+            const pub2 = dispatcher.create(1)
+            const mapped = dispatcher.subscribing(pub, pub2)(ObservableMapped.create((v1, v2) => v1 + 'b'))
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
         }),
-    test('subscribe')
-        .promisesTruth(() => new Promise((resolve, reject) => {
-            const pub = dispatcher.pub('a')
-            const mapped = dispatcher.subscribing(
-                dispatcher.reactive(pub)((s) => Promise.resolve(s + 'b')),
-                'aa',
-                async (self, event) => {
-                    self.value = await event.newValue
-                }
-            )
+    // test('subscribe')
+    //     .promisesTruth(() => new Promise((resolve, reject) => {
+    //         const pub = dispatcher.pub('a')
+            // const mapped = dispatcher.subscribing()
+            // const mapped = dispatcher.subscribing(
+            //     dispatcher.reactive(pub)((s) => Promise.resolve(s + 'b')),
+            //     'aa',
+            //     async (self, event) => {
+            //         self.value = await event.newValue
+            //     }
+            // )
 
-            mapped.on('update', e => {
-                resolve(mapped.value === 'bb')
-            })
-            pub.value = 'b'
+        //     mapped.on('update', e => {
+        //         resolve(mapped.value === 'bb')
+        //     })
+        //     pub.value = 'b'
 
-            setTimeout(() => reject(), 1000)
-        })),
+        //     setTimeout(() => reject(), 1000)
+        // })),
     test('mutable pub')
         .expectsSuccess(() => {
-            const pub = dispatcher.pub([])            
+            const pub = dispatcher.create([])            
             pub.mutate(value => {
                 value.push('a')
             })
@@ -89,7 +93,7 @@ testAll(
         .for(['a', 'b', 'prop'])
         .expectsSuccess(set => {
             const [prev, newValue, propName] = set
-            const pub = dispatcher.pub(prev)
+            const pub = dispatcher.create(prev)
             let dispatched = false
             const mixin = new Mixin(() => { dispatched = true })
             mixin.sub({[propName]: pub})
@@ -98,43 +102,6 @@ testAll(
             pub.value = newValue
             assert.eq(newValue, mixin[propName])
         }),
-    test<string[]>('nesting of property')
-        .for(['A', 'AA', 'B', 'BB'])
-        .expectsSuccess(([v1, v2, v3, v4]) => {
-            function assertValue(v) {
-                assert.eq(pub.a.value, v)
-            }
-            class HasA {
-                a: Pub<string>
-                constructor(a) { this.a = dispatcher.pub(a) }
-            }
-            const A = new HasA(v1)
-            const B = new HasA(v3)
-            
-            
-            class PubHasA extends PubWithProps<HasA> {
-                a = this.createProperty<string>(value => value.a)
-
-                constructor() {
-                    super(dispatcher, null)
-                }
-            }
-            const pub = new PubHasA()
-            
-            assertValue(null)
-            pub.value = A
-            A.a.value = v2
-            assertValue(v2)
-            pub.value = B
-            assertValue(v3)
-            B.a.value = v4
-            assertValue(v4)
-            A.a.value = v1
-            pub.value = A
-            assertValue(v1)
-            pub.value = null
-            assertValue(null)
-        })
 )
 
  

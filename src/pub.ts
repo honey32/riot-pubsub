@@ -1,4 +1,5 @@
-import { ObservableDispatcher, Listener, UpdateEvent, ObservableValueUnion } from "./dispatcher";
+import { ObservableDispatcher, Listener, UpdateEvent} from "./dispatcher";
+import { ObservableValueUnion, ObservableValueTuple, SubscribingProvider } from "./types";
 
 export abstract class Observable<V> {
     readonly value: V
@@ -19,45 +20,64 @@ export abstract class Observable<V> {
 }
 
 export abstract class ObservableSubscribing<V, D extends Observable<any>[]> extends Observable<V> {
-    constructor(dispatcher: ObservableDispatcher, ...target: D) {
+    protected _value: V
+    protected dependencies: D
+
+    get value(): V {
+        return this._value
+    }
+
+    protected updateValue(newValue: V) {
+        const oldValue = this._value
+        this._value = newValue
+        this.trigger({ type: 'update', newValue, isReassigned: true, oldValue } )
+    }
+
+    constructor(dispatcher: ObservableDispatcher, target: D) {
         super(dispatcher)
+        this.dependencies = target
         this.dispatcher.onAnyUpdate(target, (e) => this.action(e))
     }
 
     abstract action(event: UpdateEvent<ObservableValueUnion<D>>): void
 }
 
-
-
 export class ObservableMapped<V, D extends Observable<any>[]> extends ObservableSubscribing<V, D> {
-    private _value: V
-
-    constructor(dispatcher: ObservableDispatcher, private dependencies: D, private fn: (...args: any[]) => V) {
-        super(dispatcher, ...dependencies)
-        this._value = fn(...dependencies.map(obs => obs.value))
+    constructor(dispatcher: ObservableDispatcher, _dependencies: D, private fn: (...args: ObservableValueTuple<D>) => V) {
+        super(dispatcher, _dependencies)
+        this._value = fn(...this.dependencies.map(obs => obs.value) as any)
     }
 
-    action(event: UpdateEvent<keyof D>): void {
-        const oldValue = this._value
-        this._value = this.fn(...this.dependencies.map(obs => obs.value))
-        this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue } )
+    
+    static create<V, D extends Observable<any>[]>(
+            fn: (...args: ObservableValueTuple<D>) => V)
+    : SubscribingProvider<V, D, ObservableMapped<V, D>> {
+        return (dispatcher: ObservableDispatcher, ...d: D) => new ObservableMapped<V, D>(dispatcher, d, fn)
     }
 
-    get value(): V {
-        return this._value
+    action(event: UpdateEvent<ObservableValueUnion<D>>): void {
+        this.updateValue(this.fn(...this.dependencies.map(obs => obs.value) as any))
     }
 
     sync(): void {
         const oldValue = this._value
-        this._value = this.fn(...this.dependencies.map(obs => obs.value))
+        this._value = this.fn(...this.dependencies.map(obs => obs.value) as any)
         this.trigger({ type: 'update', newValue: this._value, isReassigned: true, oldValue})
+    }
+}
+
+export class ObservablePromise<V> extends ObservableSubscribing<V, [Observable<Promise<V>>]> {
+    action(event: UpdateEvent<Promise<V>>) {
+        event.newValue.then(newValue => {
+            this.updateValue(newValue)
+        })
     }
 }
 
 export class Pub<V> extends Observable<V> {
     protected _value: V
 
-    constructor(dispatcher: ObservableDispatcher, value: V, public isMutable: boolean = true) {
+    constructor(dispatcher: ObservableDispatcher, value: V) {
         super(dispatcher)
         this._value = value
     }
@@ -69,7 +89,7 @@ export class Pub<V> extends Observable<V> {
     set value(newValue: V) {
         const oldValue = this._value
 
-        if (!this.isMutable && newValue === oldValue) {
+        if (newValue === oldValue) {
             return
         }
 
@@ -88,7 +108,7 @@ export class PubContributable<V> extends Pub<V> {
     contribute(newValue: V): void {
         const oldValue = this._value
 
-        if (!this.isMutable && newValue === oldValue) {
+        if (newValue === oldValue) {
             return
         }
         

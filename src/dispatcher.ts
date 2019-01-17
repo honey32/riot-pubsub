@@ -1,21 +1,13 @@
-import { Observable, ObservableMapped, Pub, PubContributable, ObservableSubscribing } from './pub'
+import { Observable, Pub, PubContributable, ObservableSubscribing } from './pub'
+import { SubscribingProvider } from './types';
 
 export type Listener<A> = (obj: Observable<A>, event: UpdateEvent<A>) => void
-export type EventArgs<A> = [A, boolean, A]
 
 export interface UpdateEvent<V> {
     type: 'update' | 'contribute'
     newValue: V
     isReassigned: boolean
     oldValue?: V
-}
-
-type ObservableValue<T> = T extends Observable<infer V> ? V : never
-type ObservableValueTuple<D> = {[P in keyof D]: ObservableValue<D[P]>}
-export type ObservableValueUnion<D> = keyof ObservableValueTuple<D>
-
-type SubscribingCtor<V, O extends ObservableSubscribing<V, D>, D extends Observable<any>[]> = {
-    new (dispatcher: ObservableDispatcher, ...target: D): O
 }
 
 export class ObservableDispatcher {
@@ -62,18 +54,14 @@ export class ObservableDispatcher {
         return listener
     }
 
-    
-
-    pub<V>(value: V, isMutable: boolean = true) {
-        return new Pub(this, value, isMutable)
+    create<V>(value: V): Pub<V>
+    create<V>(value: V, cont: 'contributable'): PubContributable<V>
+    create<V>(value: V, cont?: 'contributable'): Pub<V> {
+        return cont === 'contributable' ? new PubContributable(this, value) : new Pub(this, value)
     }
 
-    contributable<V>(value: V, isMutable: boolean = true) {
-        return new PubContributable(this, value, isMutable)
-    }
-    
-    subscribing<V, O extends ObservableSubscribing<V, D>, D extends Observable<any>[]>
-            (ctor: SubscribingCtor<V, O, D>, ...target: D) { 
-        return new ctor(this, ...target)
+    subscribing<D extends Observable<any>[]>(...dependencies: D) {
+        return <V, R extends ObservableSubscribing<V, D>>
+            (fn: SubscribingProvider<V, D, R>) => fn(this, ...dependencies)
     }
 }
