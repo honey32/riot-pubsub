@@ -66,7 +66,11 @@ export class ObservableMapped<V, D extends Observable<any>[]> extends Observable
     }
 }
 
-export class ObservablePromise<V> extends ObservableSubscribing<V, [Observable<Promise<V>>]> {
+export class ObservablePromise<V, O extends Observable<Promise<V>>> extends ObservableSubscribing<V, [O]> {
+    static create<V, O extends Observable<Promise<V>>>(): SubscribingProvider<V, [O], ObservablePromise<V, O>> {
+        return (dispacher: ObservableDispatcher, d: O) => new ObservablePromise(dispacher, [d])
+    }
+
     action(event: UpdateEvent<Promise<V>>) {
         event.newValue.then(newValue => {
             this.updateValue(newValue)
