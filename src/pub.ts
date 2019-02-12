@@ -42,22 +42,14 @@ export abstract class ObservableSubscribing<V, D extends Observable<any>[]> exte
     abstract action(event: UpdateEvent<ObservableValueUnion<D>>): void
 }
 
-export namespace ObservableSubscribing {
-    export type Provider<V, D extends any[], R extends ObservableSubscribing<V, D>>
-        = (dispatcher: ObservableDispatcher, ...dependencies: D) => R
-}
-
 export class ObservableMapped<V, D extends Observable<any>[]> extends ObservableSubscribing<V, D> {
     constructor(dispatcher: ObservableDispatcher, _dependencies: D, private fn: (...args: ObservableValueTuple<D>) => V) {
         super(dispatcher, _dependencies)
         this._value = fn(...this.dependencies.map(obs => obs.value) as any)
     }
 
-    
-    static create<V, D extends Observable<any>[]>(
-            fn: (...args: ObservableValueTuple<D>) => V)
-    : ObservableSubscribing.Provider<V, D, ObservableMapped<V, D>> {
-        return (dispatcher: ObservableDispatcher, ...d: D) => new ObservableMapped<V, D>(dispatcher, d, fn)
+    static create<D extends Observable<any>[]>(d: ObservableDispatcher, ...dependencies: D) {
+        return <V>(fn: (...args: ObservableValueTuple<D>) => V) => new ObservableMapped(d, dependencies, fn)
     }
 
     action(event: UpdateEvent<ObservableValueUnion<D>>): void {
@@ -71,16 +63,19 @@ export class ObservableMapped<V, D extends Observable<any>[]> extends Observable
     }
 }
 
-export class ObservablePromise<V, O extends Observable<Promise<V>>> extends ObservableSubscribing<V, [O]> {
-    static create<V, O extends Observable<Promise<V>>>(): ObservableSubscribing.Provider<V, [O], ObservablePromise<V, O>> {
-        return (dispacher: ObservableDispatcher, d: O) => new ObservablePromise(dispacher, [d])
-    }
+export class ObservablePromise<V> extends ObservableSubscribing<ObservablePromise.State<V>, [Observable<Promise<V>>]> {
 
     action(event: UpdateEvent<Promise<V>>) {
-        event.newValue.then(newValue => {
-            this.updateValue(newValue)
-        })
+        this.updateValue({state: 'pending'})
+        event.newValue.then(
+            result => { this.updateValue({state: 'done', result })},
+            reason => { this.updateValue({state: 'error', reason })}
+        )
     }
+}
+
+export namespace ObservablePromise {
+    export type State<V> = import('./types').PromiseState<V>
 }
 
 export class Pub<V> extends Observable<V> {

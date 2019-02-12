@@ -5,4 +5,13 @@ export declare type ObservableValueTuple<D> = {
 };
 declare type TupleToUnion<T> = T extends Array<infer E> ? E : never;
 export declare type ObservableValueUnion<D> = TupleToUnion<ObservableValueTuple<D>>;
+export declare type PromiseState<V> = {
+    state: 'pending';
+} | {
+    state: 'done';
+    result: V;
+} | {
+    state: 'error';
+    reason: any;
+};
 export {};

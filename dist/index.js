@@ -39,8 +39,8 @@
             this.fn = fn;
             this._value = fn(...this.dependencies.map(obs => obs.value));
         }
-        static create(fn) {
-            return (dispatcher, ...d) => new ObservableMapped(dispatcher, d, fn);
+        static create(d, ...dependencies) {
+            return (fn) => new ObservableMapped(d, dependencies, fn);
         }
         action(event) {
             this.updateValue(this.fn(...this.dependencies.map(obs => obs.value)));
@@ -52,13 +52,9 @@
         }
     }
     class ObservablePromise extends ObservableSubscribing {
-        static create() {
-            return (dispacher, d) => new ObservablePromise(dispacher, [d]);
-        }
         action(event) {
-            event.newValue.then(newValue => {
-                this.updateValue(newValue);
-            });
+            this.updateValue({ state: 'pending' });
+            event.newValue.then(result => { this.updateValue({ state: 'done', result }); }, reason => { this.updateValue({ state: 'error', reason }); });
         }
     }
     class Pub extends Observable {
@@ -166,9 +162,6 @@
         }
         create(value, cont) {
             return cont === 'contributable' ? new PubContributable(this, value) : new Pub(this, value);
-        }
-        subscribing(...dependencies) {
-            return (fn) => fn(this, ...dependencies);
         }
     }
 

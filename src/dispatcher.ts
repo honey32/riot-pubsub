@@ -58,9 +58,4 @@ export class ObservableDispatcher {
     create<V>(value: V, cont?: 'contributable'): Pub<V> {
         return cont === 'contributable' ? new PubContributable(this, value) : new Pub(this, value)
     }
-
-    subscribing<D extends Observable<any>[]>(...dependencies: D) {
-        return <V, R extends ObservableSubscribing<V, D>>
-            (fn: ObservableSubscribing.Provider<V, D, R>) => fn(this, ...dependencies)
-    }
 }

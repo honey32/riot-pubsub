@@ -57,7 +57,7 @@ testAll(
         .expectsSuccess(() => {
             const pub = dispatcher.create('a')
             const pub2 = dispatcher.create(1)
-            const mapped = dispatcher.subscribing(pub, pub2)(ObservableMapped.create((v1, v2) => v1 + 'b'))
+            const mapped = ObservableMapped.create(dispatcher, pub, pub2)((v1, v2) => v1 + 'b')
             assert.eq(mapped.value, 'ab')
             pub.value = 'b'
             assert.eq(mapped.value, 'bb')
@@ -65,14 +65,22 @@ testAll(
     test('promise')
         .promisesTruth(() => new Promise((resolve, reject) => {
             const pub = dispatcher.create(Promise.resolve('a'))
-            const mapped = dispatcher.subscribing(pub)(ObservablePromise.create())
+            const mapped = new ObservablePromise(dispatcher, [pub])
 
+            let flag = false
             mapped.on('update', e => {
-                resolve(mapped.value === 'b')
+                if(e.newValue.state === 'pending') {
+                    flag = true
+                }
+                if(e.newValue.state === 'done') {
+                    resolve(flag && e.newValue.result === 'b')
+                }
             })
-            pub.value = Promise.resolve('b')
+            pub.value = new Promise<string>((resolve) => {
+                setTimeout(() => resolve('b'), 1000)
+            })
 
-            setTimeout(() => reject(), 1000)
+            setTimeout(() => reject(), 2000)
         })),
     test('mutable pub')
         .expectsSuccess(() => {

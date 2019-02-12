@@ -16,19 +16,18 @@ export declare abstract class ObservableSubscribing<V, D extends Observable<any>
     constructor(dispatcher: ObservableDispatcher, target: D);
     abstract action(event: UpdateEvent<ObservableValueUnion<D>>): void;
 }
-export declare namespace ObservableSubscribing {
-    type Provider<V, D extends any[], R extends ObservableSubscribing<V, D>> = (dispatcher: ObservableDispatcher, ...dependencies: D) => R;
-}
 export declare class ObservableMapped<V, D extends Observable<any>[]> extends ObservableSubscribing<V, D> {
     private fn;
     constructor(dispatcher: ObservableDispatcher, _dependencies: D, fn: (...args: ObservableValueTuple<D>) => V);
-    static create<V, D extends Observable<any>[]>(fn: (...args: ObservableValueTuple<D>) => V): ObservableSubscribing.Provider<V, D, ObservableMapped<V, D>>;
+    static create<D extends Observable<any>[]>(d: ObservableDispatcher, ...dependencies: D): <V>(fn: (...args: ObservableValueTuple<D>) => V) => ObservableMapped<V, D>;
     action(event: UpdateEvent<ObservableValueUnion<D>>): void;
     sync(): void;
 }
-export declare class ObservablePromise<V, O extends Observable<Promise<V>>> extends ObservableSubscribing<V, [O]> {
-    static create<V, O extends Observable<Promise<V>>>(): ObservableSubscribing.Provider<V, [O], ObservablePromise<V, O>>;
+export declare class ObservablePromise<V> extends ObservableSubscribing<ObservablePromise.State<V>, [Observable<Promise<V>>]> {
     action(event: UpdateEvent<Promise<V>>): void;
+}
+export declare namespace ObservablePromise {
+    type State<V> = import('./types').PromiseState<V>;
 }
 export declare class Pub<V> extends Observable<V> {
     protected _value: V;

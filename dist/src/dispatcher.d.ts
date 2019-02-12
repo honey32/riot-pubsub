@@ -1,4 +1,4 @@
-import { Observable, Pub, PubContributable, ObservableSubscribing } from './pub';
+import { Observable, Pub, PubContributable } from './pub';
 export declare type Listener<A> = (obj: Observable<A>, event: UpdateEvent<A>) => void;
 export interface UpdateEvent<V> {
     type: 'update' | 'contribute';
@@ -16,5 +16,4 @@ export declare class ObservableDispatcher {
     onAnyUpdate(objects: Observable<any>[], fn: (event: UpdateEvent<any>) => any): Listener<any>;
     create<V>(value: V): Pub<V>;
     create<V>(value: V, cont: 'contributable'): PubContributable<V>;
-    subscribing<D extends Observable<any>[]>(...dependencies: D): <V, R extends ObservableSubscribing<V, D>>(fn: ObservableSubscribing.Provider<V, D, R>) => R;
 }
